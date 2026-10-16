@@ -24,7 +24,7 @@ import math
 
 import numpy as np
 
-SINC2_HALF = 0.773741                       # int_{|x| <= 1/2} sinc^2 x dx (the capture of a window averaged over offsets)
+SINC2_HALF = 0.7736950099                  # int_{|x| <= 1/2} sinc^2 = (2/pi) Si(pi) - 4/pi^2 (mean capture over offsets)
 
 
 # ================================================================ windows (the indicators)
@@ -127,6 +127,39 @@ def prime_predictions(X: int, psi: float, L2: float, mu: np.ndarray, phi: np.nda
     LN = X * L2 / psi**2
     sF = sum(1.0 / phi[q] for q in range(3, int(Q) + 1) if mu[q] != 0)
     return {"L_N": LN, "atoms": 2.0 / LN, "forest": sF / LN, "sea": 1.0 - (2.0 + sF) / LN}
+
+
+def leading_order_shares(lnX: float) -> tuple[float, float, float]:
+    """Leading-order (atoms, forest, sea) at ln X = lnX: q* from the fixed point q = sqrt(X / FG(q)) with the prime-q form
+    FG(q) = ln q - gamma - ln 2 pi, sum_{q<=Q} mu^2/phi ~ ln Q + 1.3326, and L_N ~ ln X - 1.  This is a model (the FG
+    asymptotic and the spike model up to q*), not a theorem.  The atoms fall like 2/ln X; the forest and the sea approach
+    1/2 only like ln ln X / (2 ln X), and the sea passes 1/2 near X ~ 10^38 and returns to it from above."""
+    lq = 0.5 * lnX
+    for _ in range(80):
+        fg = max(lq - 0.5772156649 - math.log(2 * math.pi), 0.5)
+        lq = 0.5 * (lnX - math.log(fg))
+    LN = lnX - 1.0
+    f = (lq + 1.3326 - 2.0) / LN
+    return 2.0 / LN, f, 1.0 - 2.0 / LN - f
+
+
+def divisor_sea(q: int, V: dict, factors) -> float:
+    """Mean over reduced a of |S(a/q) - coherent|^2 from the residue-class variances V[d] of the divisors d | q:
+        (1/phi(q)) sum_{d|q} mu(q/d) d V[d]        (q squarefree; V[1] = V[2] = 0, a single reduced class)
+    because sum_{a reduced} e(a(r - s)/q) = c_q(r - s) = sum_{d|q, d|r-s} d mu(q/d)."""
+    ps = list(factors)
+    tot = 0.0
+    for mask in range(1 << len(ps)):
+        d = 1
+        for i, p in enumerate(ps):
+            if mask >> i & 1:
+                d *= p
+        sign = (-1) ** (len(ps) - bin(mask).count("1"))
+        tot += sign * d * V.get(d, 0.0)
+    phq = 1
+    for p in ps:
+        phq *= p - 1
+    return tot / phq
 
 
 def asymptotic_shares(X: float, Q: float, LN: float | None = None) -> dict:

@@ -101,3 +101,72 @@ def test_prime_predictions_and_limits(small, tables):
     assert pr["atoms"] + pr["forest"] + pr["sea"] == pytest.approx(1.0)
     far = cp.asymptotic_shares(1e300, math.sqrt(1e300 / math.log(1e300)))
     assert far["atoms"] < 0.01 and abs(far["forest"] - 0.5) < 0.01 and abs(far["sea"] - 0.5) < 0.02
+
+
+def test_constants_predictions_and_model_energies(small, tables):
+    from scipy.special import sici
+
+    mu, phi = tables
+    assert cp.SINC2_HALF == pytest.approx(2 / math.pi * sici(math.pi)[0] - 4 / math.pi**2, rel=1e-9)
+    pr = cp.prime_predictions(X, small["psi"], small["L2"], mu, phi, 75)
+    assert pr["forest"] == pytest.approx(sum(1 / phi[q] for q in range(3, 76) if mu[q] != 0) / pr["L_N"], rel=1e-12)
+    me = cp.model_energies([1, 4, 6], X, 1000.0, 4, {1}, 2.0)
+    for q in (1, 4, 6):
+        assert np.allclose(me[q], np.abs(cp.class_model_heights(q, 1000.0, 4, {1}, 2.0)) ** 2 / X)
+
+
+def test_leading_order_law_values():
+    a, f, s = cp.leading_order_shares(6 * math.log(10))
+    assert (a, f, s) == pytest.approx((0.1561, 0.4346, 0.4093), abs=5e-4)
+    a, f, s = cp.leading_order_shares(12 * math.log(10))
+    assert (a, f, s) == pytest.approx((0.0751, 0.4500, 0.4749), abs=5e-4)
+    a, f, s = cp.leading_order_shares(1000 * math.log(10))
+    assert a < 0.001 and abs(f - 0.5) < 0.002 and s > 0.5            # the sea approaches 1/2 from above
+
+
+def test_divisor_identity_exact(small):
+    """Mean over reduced a of |S_red(a/q) - coherent|^2 = (1/phi(q)) sum_{d|q} mu(q/d) d V_q(d), with the variances over n
+    coprime to q: an exact identity (Ramanujan sums)."""
+    from sieve import factorize
+
+    lam = small["lam"]
+    n = np.flatnonzero(lam)
+    w = lam[n]
+    for q in (6, 30, 35, 42, 105):
+        cop = np.gcd(n, q) == 1
+        nq, wq = n[cop], w[cop]
+        res = np.bincount(nq % q, weights=wq, minlength=q)
+        red = np.gcd(np.arange(q), q) == 1
+        ps = list(factorize(q))
+        coh = (-1) ** len(ps) * res[red].sum() / red.sum()
+        centre = float(np.mean(np.abs((q * np.fft.ifft(res))[red] - coh) ** 2))
+        V = {1: 0.0}
+        for mask in range(1, 1 << len(ps)):
+            d = math.prod(p for i, p in enumerate(ps) if mask >> i & 1)
+            r_d = np.bincount(nq % d, weights=wq, minlength=d)
+            red_d = np.gcd(np.arange(d), d) == 1
+            V[d] = float(np.sum((r_d[red_d] - wq.sum() / red_d.sum()) ** 2)) if d > 2 else 0.0
+        assert cp.divisor_sea(q, V, ps) == pytest.approx(centre, rel=1e-9)
+
+
+def test_budget_recovers_synthetic_compartments(tables):
+    """Dirichlet spikes of known heights at q = 1, 2, 3 on a uniform sea: the driver's budget() recovers atoms, forest and
+    the sea density."""
+    import run_compartments as rc
+
+    k = np.arange(M)
+    h = {1: 900.0, 2: -900.0, 3: -450.0}
+    rho = 2.5e3
+    a2 = np.full(M, rho)
+    for q, s in h.items():
+        for a in ([0] if q == 1 else [b for b in range(q) if math.gcd(b, q) == 1]):
+            beta = k / M - a / q
+            num = np.sin(np.pi * X * beta) ** 2
+            den = np.sin(np.pi * beta) ** 2
+            D2 = np.where(den > 1e-30, num / np.where(den > 1e-30, den, 1.0), float(X) ** 2)
+            a2 += s**2 * D2 / X**2
+    model = {q: np.array([h[q] ** 2 / X] * (1 if q == 1 else sum(math.gcd(b, q) == 1 for b in range(q)))) for q in h}
+    b = rc.budget(a2, X, M, model, 3)
+    assert b["A"] == pytest.approx((h[1] ** 2 + h[2] ** 2) / X, rel=5e-3)
+    assert b["F"] == pytest.approx(2 * h[3] ** 2 / X, rel=5e-3)
+    assert b["rho"] == pytest.approx(rho, rel=5e-3)

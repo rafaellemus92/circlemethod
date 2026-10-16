@@ -170,13 +170,15 @@ Physiology measures total body water and its compartments by indicator dilution 
 tracers that stray outside their space. `compartments.md` measures the energy of S the same way, with Parseval as the
 conserved total and windows around fractions as the indicators:
 
-* **B1.** At X = 10^6: atoms (q = 1, 2) 15.6%, forest (3 ≤ q ≤ q*) 43.6%, sea 40.8%, matching the no-fit spike model
+* **B1.** At X = 10^6: atoms (q = 1, 2) 15.6%, forest (3 ≤ q ≤ ⌊q*⌋) 43.6%, sea 40.8%, matching the no-fit spike model
   (2/L_N and Σμ²/φ / L_N) to 0.3%. That match needs two corrections. Each window needs its exact capture (0.755 or 0.803,
-  not the average 0.774). And the sea is not evenly mixed: near a/q it is thinner, at the level of the variance of
-  primes in progressions mod q (X·FG(q)), than its circle average.
+  not the average 0.774). And the sea is not evenly mixed: near a/q its level is (1/φ(q)) Σ_{d|q} μ(q/d)·d·V(X; d), a
+  divisor sum of the variances of primes in progressions (an exact identity), well below its circle average.
 * **B2.** From X = 10^4 to 2·10^6 the atoms fall like 2/(ln X − 1) (24.5% → 14.8%), the forest stays near 0.44 and the sea
-  grows; as X → ∞ the shares tend to 0, ½, ½. This is the counterpart of a fetus's changing body water, with the
-  difference stated: X is not time, and the coherent share falls while a fetus gains solids.
-* **B3.** "Growth aberration": with the same total weight, Cramér's model has no forest, the primes have 42–44%, and the
-  primes ≡ 1 (mod 4) have more (46%): the arithmetic of the set sets its composition, as the no-fit congruence model
-  predicts.
+  grows. In the leading-order model the shares tend to 0, ½, ½, the forest and sea only like ln ln X/(2 ln X). This is the
+  counterpart of a fetus's changing body water, with the difference stated: X is not time, and the coherent share falls
+  while a fetus gains solids.
+* **B3.** "Growth aberration": with the same total weight, Cramér's model has no forest and the primes have 42%.
+  Restricting the primes to n ≡ 1 (mod 4) does not add forest: it adds two exact copies of the main spike (at ¼ and ¾) and
+  leaves a smaller forest (38%). Removing congruence structure removes forest; only that direction has a body-composition
+  counterpart.
