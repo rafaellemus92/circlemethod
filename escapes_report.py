@@ -47,6 +47,31 @@ def first_close(vals, start: int = 0):
     return None
 
 
+def largest_closing(points):
+    """z* search over (z, ratio) pairs: returns (last, nxt).
+
+    last = (z, ratio) for the largest z such that every tabulated z' <= z closes (ratio < 0.99), or None if the
+    smallest z already does not; nxt = the first (z, ratio) that does not close, or None if every z closes.
+    A z that closes again after a failure does not count: z* is where the unbroken run of closing z ends.
+    """
+    last = nxt = None
+    for z, v in sorted(points, key=lambda t: t[0]):
+        if lab(v) == "closes":
+            last = (z, v)
+        else:
+            nxt = (z, v)
+            break
+    return last, nxt
+
+
+def zstar_text(last, nxt) -> str:
+    """Table cell for largest_closing's result, e.g. '53 (0.944); next z = 59: 1.000 undecided'."""
+    stop = f"{nxt[0]}: {nxt[1]:.3f} {lab(nxt[1])}" if nxt else None
+    if last is None:
+        return f"none (z = {stop})" if stop else "none (no z tabulated)"
+    return f"{last[0]} ({last[1]:.3f}); " + (f"next z = {stop}" if stop else "every z closes")
+
+
 def kstr(K, vals=None, kmax: int = 14) -> str:
     if K is None:
         return f"> {kmax}"
@@ -498,23 +523,12 @@ def sec_e3(res) -> tuple[str, dict]:
         c = [e3[f"Omega<={r}"]["rows"][p]["CS_ratio"] for r in range(1, 7)]
         rj, rc = first_close(j), first_close(c)
         zs = sorted(int(n.split("-")[0]) for n in e3 if n.endswith("-rough"))
-        zz = {}
-        for key in ("joint_ratio", "CS_ratio"):
-            last, nxt = None, None
-            for z in zs:
-                v = e3[f"{z}-rough"]["rows"][p][key]
-                if v < 0.99:
-                    last = (z, v)
-                else:
-                    nxt = (z, v)
-                    break
-            zz[key] = (last, nxt)
+        zz = {key: largest_closing([(z, e3[f"{z}-rough"]["rows"][p][key]) for z in zs])
+              for key in ("joint_ratio", "CS_ratio")}
         out[p] = dict(rj=None if rj is None else rj + 1, rc=None if rc is None else rc + 1, z=zz)
-        fz = lambda t: ("none" if not t[0] else f"{t[0][0]} ({t[0][1]:.3f})"  # noqa: E731
-                        + (f"; next z = {t[1][0]}: {t[1][1]:.3f} {lab(t[1][1])}" if t[1] else "; every z closes"))
         rstar.append([pair(p), f"{out[p]['rj']} ({j[rj]:.3f})" if rj is not None else "> 6",
                       f"{out[p]['rc']} ({c[rc]:.3f})" if rc is not None else "> 6",
-                      fz(zz["joint_ratio"]), fz(zz["CS_ratio"])])
+                      zstar_text(*zz["joint_ratio"]), zstar_text(*zz["CS_ratio"])])
     zs = sorted(int(n.split("-")[0]) for n in e3 if n.endswith("-rough"))
     zrows = [[f"{z}", f"{e3[f'{z}-rough']['density']:.4f}"]
              + [f"{r3(e3[f'{z}-rough']['rows'][p]['joint_ratio'])} / {r3(e3[f'{z}-rough']['rows'][p]['CS_ratio'])}"

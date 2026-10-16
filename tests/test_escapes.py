@@ -285,3 +285,83 @@ def test_joint_sentence():
     assert rep.joint_sentence(pairs, mk([None, 3, 2, 1])) == ("closes with **one** power of 2 at (150,20), and with two "
                                                               "at (20,10); (5,5), (10,10) need more")
     assert "no pair" in rep.joint_sentence(pairs, mk([2, 2, 2, 2]))
+
+
+# ------------------------------------------------------------------ E3: the z* search (largest closing z)
+NAN = float("nan")
+
+
+@pytest.mark.parametrize("points, last, nxt, text", [
+    # an unbroken run of closing z, then an undecided one
+    ([(3, 0.1), (5, 0.5), (7, 0.995), (11, 1.2)], (5, 0.5), (7, 0.995), "5 (0.500); next z = 7: 0.995 undecided"),
+    # every z closes: no 'next z' at all
+    ([(3, 0.1), (5, 0.5), (7, 0.9)], (7, 0.9), None, "7 (0.900); every z closes"),
+    # the smallest z already fails
+    ([(3, 1.3), (5, 0.5)], None, (3, 1.3), "none (z = 3: 1.300 fails)"),
+    # a z that closes again after a failure does not extend z*
+    ([(3, 0.2), (5, 1.1), (7, 0.3)], (3, 0.2), (5, 1.1), "3 (0.200); next z = 5: 1.100 fails"),
+    # the margin: exactly 0.99 is undecided, not closing
+    ([(3, 0.5), (5, 0.99)], (3, 0.5), (5, 0.99), "3 (0.500); next z = 5: 0.990 undecided"),
+    # input order does not matter
+    ([(7, 1.2), (3, 0.1), (5, 0.5)], (5, 0.5), (7, 1.2), "5 (0.500); next z = 7: 1.200 fails"),
+    # a missing (NaN) ratio stops the run instead of being skipped
+    ([(3, 0.1), (5, NAN), (7, 0.2)], (3, 0.1), (5, NAN), "3 (0.100); next z = 5: nan n/a"),
+    ([], None, None, "none (no z tabulated)"),
+])
+def test_largest_closing(points, last, nxt, text):
+    import escapes_report as rep
+
+    got_last, got_nxt = rep.largest_closing(points)
+    assert got_last == last
+    assert (got_nxt is None and nxt is None) or (got_nxt[0] == nxt[0] and (got_nxt[1] == nxt[1] or math.isnan(nxt[1])))
+    assert rep.zstar_text(got_last, got_nxt) == text
+
+
+# z-ratio table for a synthetic E3 result, per (pair, bound): one list of ratios over ZS. Built so that the first bound
+# of the first pair never fails (the old loop raised UnboundLocalError there) and the next pair's joint bound never
+# fails right after a failing CS bound (the old loop then printed the stale 'next z' of the previous bound).
+ZS = [3, 5, 7, 11, 13, 101, 1000]
+ZTABLE = {
+    ((150, 20), "joint_ratio"): [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],     # every z closes
+    ((150, 20), "CS_ratio"):    [0.2, 0.4, 0.6, 0.8, 1.2, 1.5, 2.9],     # z* = 11, fails at 13
+    ((100, 20), "joint_ratio"): [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],     # every z closes again
+    ((100, 20), "CS_ratio"):    [1.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],     # smallest z fails
+    ((50, 10), "joint_ratio"):  [0.3, 0.5, 0.7, 1.0, 1.4, 2.0, 4.0],     # z* = 7, undecided at 11
+    ((50, 10), "CS_ratio"):     [0.5, 1.3, 0.4, 0.4, 0.4, 0.4, 0.4],     # recloses after a failure: z* = 3
+}
+
+
+def _synthetic_e3_results():
+    import escapes_report as rep
+
+    def rows(f):
+        return {p: {"joint_ratio": f(p, "joint_ratio"), "CS_ratio": f(p, "CS_ratio"), "f": 0.1} for p in rep.SHORT5}
+
+    others = [f"Omega<={r}" for r in range(1, 7)] + [
+        "odd Omega<=2", "Omega<=2, (m,10)=1", "Chen-shaped: Omega<=2, (m,6)=1", "odd Omega<=3", "Omega<=3, (m,10)=1",
+        "Bernoulli(0.2885) [control for Omega<=2]", "Bernoulli(0.5394) [control for Omega<=3]"]
+    sets = [{"name": n, "density": 0.3, "rows": rows(lambda p, k: 0.5)} for n in others]
+    for i, z in enumerate(ZS):
+        zr = lambda p, k, i=i: ZTABLE.get((p, k), [0.2, 0.99, 0.2, 0.2, 0.2, 0.2, 0.2])[i]  # noqa: E731
+        sets.append({"name": f"{z}-rough", "density": 1.0 / z, "rows": rows(zr)})
+    return {"e3": sets}
+
+
+def test_sec_e3_zstar_on_synthetic_results():
+    import escapes_report as rep
+
+    txt, out = rep.sec_e3(_synthetic_e3_results())
+    expect = {
+        ((150, 20), "joint_ratio"): "1000 (0.700); every z closes",
+        ((150, 20), "CS_ratio"): "11 (0.800); next z = 13: 1.200 fails",
+        ((100, 20), "joint_ratio"): "1000 (0.100); every z closes",
+        ((100, 20), "CS_ratio"): "none (z = 3: 1.500 fails)",
+        ((50, 10), "joint_ratio"): "7 (0.700); next z = 11: 1.000 undecided",
+        ((50, 10), "CS_ratio"): "3 (0.500); next z = 5: 1.300 fails",
+        ((20, 10), "joint_ratio"): "3 (0.200); next z = 5: 0.990 undecided",
+    }
+    for (p, key), cell in expect.items():
+        row = next(l for l in txt.splitlines() if l.startswith(f"| {rep.pair(p)} |"))
+        cells = [c.strip() for c in row.strip("|").split("|")]
+        assert cells[3 if key == "joint_ratio" else 4] == cell, (p, key, row)
+        assert rep.zstar_text(*out[p]["z"][key]) == cell

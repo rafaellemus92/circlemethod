@@ -311,14 +311,11 @@ def fig_X3(res, out):
     ax.set_yscale("log")
     ax.set_xlabel("z  (second summand has no prime factor below z; z ≈ √X gives the primes again)")
     ax.set_ylabel("minor-arc bound ÷ major part")
+    from escapes_report import largest_closing
+
     def zstar(pr):
-        last = None
-        for z in zs:
-            if e3[f"{z}-rough"]["rows"][pr]["joint_ratio"] < 0.99:
-                last = z
-            else:
-                break
-        return last
+        last, _ = largest_closing([(z, e3[f"{z}-rough"]["rows"][pr]["joint_ratio"]) for z in zs])
+        return last[0] if last else "none"
     ax.set_title(f"(b) stopping the sieve at z: the joint bound closes up to z = {zstar((150, 20))} at (150, 20), "
                  f"{zstar((20, 10))} at (20, 10)")
     ax.legend(loc="lower right", fontsize=7.2)
