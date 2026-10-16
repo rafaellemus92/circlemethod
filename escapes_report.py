@@ -36,7 +36,7 @@ def r3(x: float) -> str:
     """Ratio to 3 decimals, flagged when it falls inside the undecided band."""
     if x is None or not np.isfinite(x):
         return "—"
-    s = f"{x:.3f}" if x >= 0.0095 else f"{x:.2e}"
+    s = f"{x:.3f}" if x >= 0.0095 else f"{x:.2g}"
     return s + " (undecided)" if lab(x) == "undecided" else s
 
 
@@ -58,7 +58,10 @@ def fact(n: int) -> str:
 
 
 def pc(x: float, n: int) -> str:
-    return f"{x:,.0f} ({100 * x / n:.2g}%)" if x < 10 * n else f"{x:.3g} ({100 * x / n:,.0f}%)"
+    """Count with its share of n: '274 (0.11%)', '565,439 (226%)', '3.54e6 (1,414%)'."""
+    p = 100 * x / n
+    ps = f"{p:,.0f}%" if p >= 10 else (f"{p:.1f}%" if p >= 1 else f"{p:.2g}%")
+    return f"{x:,.0f} ({ps})" if x < 1e6 else f"{_e(x, 2)} ({ps})"
 
 
 def pair(p) -> str:
@@ -190,7 +193,7 @@ def sec_e1(res) -> tuple[str, dict]:
     for p in res["pairs"]:
         o = e1[p]
         w = o["worst"][0]
-        rows.append([pair(p), _e(o["E4m"], 3), f"{o['kurtosis']:.3g}", pc(o["bound_4th"], n), pc(o["bound_natural_sup"], n),
+        rows.append([pair(p), _e(o["E4m"], 3), f"{o['kurtosis']:,.0f}" if o["kurtosis"] >= 100 else f"{o['kurtosis']:.2f}", pc(o["bound_4th"], n), pc(o["bound_natural_sup"], n),
                      pc(o["bound_textbook"], n), pc(o["bound_oracle"], n), f"{o['F']}",
                      f"{w[1]:.3f} ({w[0]:,}; {'harmless' if w[2] > 0 else 'harmful'} sign)",
                      f"{o['pm_ratio_min']:.3f}–{o['pm_ratio_median']:.2f}–{o['pm_ratio_max']:.2f}",
