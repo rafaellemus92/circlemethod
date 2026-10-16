@@ -40,7 +40,7 @@ mass 1/(Lφ(q)²) of the normalised measure.
 | M3 minor-arc tails | is the minor-arc \|S\|² wild or mild? | Hill index (k = 1000) 1.06 at (5,5), 1.32 at (20,10), 3.16 at (150,20) | wild in the untruncated idealisation at Q ≤ 20; neither wild nor exponential at Q ≳ 50 |
 | M4 minor-arc walk | how rough is the E0 walk? long memory? | H₂ = 0.531 vs Cramér 0.506 ± 0.003 at Nℓ ∈ [10,100) (z = 8.2); H_½ = 0.78 vs 0.52 at (20,10) | smooth below 1/N (generic); H₂ slightly above ½ from residual spikes; Noah effect yes; no long memory |
 | M5 Mandelbrot bulbs | do bulbs and spikes share a hierarchy? | 245/245 bulbs checked; prefactor 0.98–1.14; mediant rule 140/140 (bulbs) vs 56/140 (spikes) | same index set and circle order, q⁻² sizes through Diophantine approximation; not shared dynamics |
-| A1 octaves of q | how is the energy spread over denominators? | 0.039–0.057 of ΣΛ² per octave for q ∈ [4, 128) | equal energy per octave: the L² wall in fractal language |
+| A1 octaves of q | how is the energy spread over denominators? | 0.039–0.046 of ΣΛ² per octave for q ∈ [8, 128) | equal energy per octave: the L² wall in fractal language |
 | A2 large values | how many cells have \|S\| ≥ N^σ? | 4,093 cells at σ = 0.7 against 1,990 spikes; large-sieve bound / cells = 50 | count exponent 2(1 − σ) at resolution 1/N: the finite-N shadow of Jarník–Besicovitch |
 | A3 uncertainty | why do sharp arcs leak? | sharp cutoff: σ_n·σ_α grows like √L; smooth bump 0.0947 = 1.19× the bound 1/(4π) | the Heisenberg–Gabor inequality for conjugate n and α (ħ → 1/2π): literal |
 
@@ -98,7 +98,7 @@ heights scatter by a factor of two (the collapse has failed). By q ≈ 2000–40
 **(b) The collapse error is predicted by the variance of primes in progressions.** Write Z_a = μ(q)S(a/q)φ(q)/ψ − 1.
 Over the reduced a, E|Z|² and E[Z²] are exact second moments (E[Z²] is real, because a → −a conjugates). The
 residue-class variance V(q) = Σ_{(r,q)=1}(ψ(X;q,r) − ψ_c/φ(q))² (Barban–Davenport–Halberstam, Montgomery–Hooley)
-behaves like X·FG(q), FG(q) = ln q − γ − ln 2π − Σ_{p|q} ln p/(p−1) (Friedlander–Goldston form). Three predictions per q:
+behaves like X·FG(q), FG(q) = ln q − γ − ln 2π − Σ_{p|q} ln p/(p−1) (Friedlander–Goldston form). Two models:
 a **Beckmann model** y = |1 + X + iY| with X, Y independent Gaussians carrying the exact E|Z|², E[Z²] (an 80×80
 Gauss–Hermite rule); and for prime q the **Rice-FG closed form** with σ² = (q−1)²X·FG(q)/ψ², which uses no data at all.
 
@@ -114,8 +114,9 @@ Gauss–Hermite rule); and for prime q the **Rice-FG closed form** with σ² = (
 | 2310 | 480 | 1.230 / 0.571 / 0.758 | 1.239 / 0.551 / 0.751 | n/a (composite) |
 
 The isotropic Rice model with the measured E|Z|² gets the spike-dominated regime wrong: at q = 210 it gives sd
-0.054 against the measured 0.030; Beckmann's anisotropy fixes it. For composite q the off-diagonal
-Ramanujan-sum terms matter (E|Z|²φ²/(ψ²V)·… = 1.80 at q = 210, 1.09 at q = 301, 1.13 at q = 1001), so the FG closed form is used for prime q only. V(q)/X against FG:
+0.054 against the measured 0.030; Beckmann's anisotropy fixes it. For prime q,
+E|Z|²·ψ²/(φ(q)²V(q)) = q/(q − 1) up to prime-power classes (1.002 at q = 499). For composite q the off-diagonal
+Ramanujan-sum terms make it 1.80 at q = 210, 1.09 at q = 301, 1.13 at q = 1001, so the FG closed form is used for prime q only. V(q)/X against FG:
 
 | prime q | V(q)/X | FG(q) | ratio |
 |---:|---:|---:|---:|
@@ -141,8 +142,9 @@ K(q) = √(mean_a |S(a/q) + ψ_c/(q−1)|²)·(q−1)/ψ exceeds 1:
 | 1e6 | 521 | 513 | 269 | 279 | 223 |
 | 2e6 | 709 | 698 | 371 | 385 | 316 |
 
-At X = 10^6, q* = 521 measured against 513 predicted. The plan's √(X/log X) is about
-2.0× too low; ψ/√ΣΛ² is an order of magnitude only.
+At X = 10^6, q* = 521 measured against 513 predicted. The early estimate √(X/log X) is
+1.9–2.3× too low at every X; ψ/√ΣΛ² is an order of
+magnitude only.
 q* and the largest admissible arc range Q_max = √(X/2c) both grow like √X up to logarithms, **for different reasons**:
 q* compares spike height with the sea; Q_max compares arc width c/N with the Farey spacing 1/Q², and depends on c. They
 do not coincide.
@@ -290,16 +292,18 @@ and the boxes of the full-circle measure with α < 0.9 that lie entirely in the 
 | (150,20) | 0.62 (Nε 2.7) | 0.59 (Nε 2.7) | 0.79 (Nε 2.7) | 899 | 0.804 | 3.7% |
 | (223,10) | 0.70 (Nε 2.7) | 0.68 (Nε 2.7) | 0.78 (Nε 2.7) | 234 | 0.825 | 0.9% |
 
-**(f) X-scaling.** The compensated rank–mass at the box with Nε nearest 8, for six X, each with its own L(X):
+**(f) X-scaling.** The compensated rank–mass at the box with Nε nearest 8, for six X, each with its own L(X). Between
+consecutive φ-groups the curve is a sawtooth (the full range over i ∈ [8, 256] is about 0.7–1.4 at every X ≥ 10^5), so
+the table gives the median and the values at powers of 2:
 
-| X | L(X) | L − ln X | Nε | 2L·i·m₍ᵢ₎, i ∈ [8, 256] | at i = 512 |
-|---:|---:|---:|---:|---:|---:|
-| 1e4 | 6.152 | -3.058 | 9.8 | 0.77–2.58 | 3.86 |
-| 3e4 | 7.293 | -3.016 | 7.3 | 0.71–1.43 | 1.87 |
-| 1e5 | 8.500 | -3.013 | 6.1 | 0.71–1.42 | 1.12 |
-| 3e5 | 9.622 | -2.990 | 9.2 | 0.71–1.45 | 1.09 |
-| 1e6 | 10.823 | -2.992 | 7.6 | 0.70–1.43 | 0.99 |
-| 2e6 | 11.513 | -2.995 | 7.6 | 0.70–1.43 | 0.99 |
+| X | L(X) | L − ln X | Nε | median of 2L·i·m₍ᵢ₎, i ∈ [8, 256] | at i = 8, 16, …, 256 | at i = 512 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1e4 | 6.152 | -3.058 | 9.8 | 1.30 | 0.94–2.58 | 3.86 |
+| 3e4 | 7.293 | -3.016 | 7.3 | 1.11 | 0.88–1.32 | 1.87 |
+| 1e5 | 8.500 | -3.013 | 6.1 | 1.00 | 0.87–1.04 | 1.12 |
+| 3e5 | 9.622 | -2.990 | 9.2 | 0.98 | 0.87–1.00 | 1.09 |
+| 1e6 | 10.823 | -2.992 | 7.6 | 0.97 | 0.86–0.99 | 0.99 |
+| 2e6 | 11.513 | -2.995 | 7.6 | 0.97 | 0.86–0.97 | 0.99 |
 
 **Shows.** f = α for α < 1 and D_s(ε) are quantitative consequences of the Farey count with heights ψ/φ(q); the surrogate
 made of singular-series spikes q ≤ 1000 plus a structureless sea reproduces every curve, and Cramér is a monofractal
@@ -325,12 +329,12 @@ predicts the kurtosis κ = mean_m|S|⁴/(mean_m|S|²)².
 
 | (Q,c) | κ | κ model / measured | sup²/mean | predicted sup² / measured | active term | Pareto range | Hill k = 300 / 1000 / 10⁴ | Hill Cramér (k = 1000) | κ Cramér |
 |---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|
-| (5,5) | 1045 | 0.999 | 24581.8 | 1.005 | q = 6 (phi = 2) | [5, 988] | 1.13 / 1.06 / 1.05 | 5.85 | 2.157 |
-| (10,10) | 120.2 | 0.992 | 3017.0 | 1.002 | q = 14 (phi = 6) | [5, 121] | 1.29 / 1.08 / 1.08 | 6.91 | 2.016 |
-| (20,10) | 59.76 | 0.982 | 1820.1 | 0.997 | q = 30 (phi = 8) | [5, 73] | 1.47 / 1.32 / 1.14 | 6.93 | 2.016 |
-| (50,10) | 10.54 | 0.878 | 347.9 | 0.935 | q = 66 (phi = 20) | none | 2.47 / 1.98 / 1.36 | 6.95 | 2.017 |
-| (100,20) | 4.927 | 0.716 | 142.3 | 0.951 | q = 102 (phi = 32) | none | 3.03 / 2.31 / 1.77 | 8.60 | 2.002 |
-| (150,20) | 3.312 | 0.574 | 71.8 | 0.868 | q = 210 (phi = 48) | none | 4.48 / 3.16 / 2.04 | 8.49 | 2.001 |
+| (5,5) | 1045 | 0.999 | 24581.8 | 1.005 | q = 6 (φ = 2) | [5, 988] | 1.13 / 1.06 / 1.05 | 5.85 | 2.157 |
+| (10,10) | 120.2 | 0.992 | 3017.0 | 1.002 | q = 14 (φ = 6) | [5, 121] | 1.29 / 1.08 / 1.08 | 6.91 | 2.016 |
+| (20,10) | 59.76 | 0.982 | 1820.1 | 0.997 | q = 30 (φ = 8) | [5, 73] | 1.47 / 1.32 / 1.14 | 6.93 | 2.016 |
+| (50,10) | 10.54 | 0.878 | 347.9 | 0.935 | q = 66 (φ = 20) | none | 2.47 / 1.98 / 1.36 | 6.95 | 2.017 |
+| (100,20) | 4.927 | 0.716 | 142.3 | 0.951 | q = 102 (φ = 32) | none | 3.03 / 2.31 / 1.77 | 8.60 | 2.002 |
+| (150,20) | 3.312 | 0.574 | 71.8 | 0.868 | q = 210 (φ = 48) | none | 4.48 / 3.16 / 2.04 | 8.49 | 2.001 |
 | (223,10) | 2.642 | 0.420 | 156.4 | 0.889 | arc-edge sidelobe of q = 1, 2 | none | 3.81 / 3.44 / 2.59 | 6.66 | 2.025 |
 
 The fourth-moment model counts spikes only. It holds to 0.982–0.999 at Q ≤ 20; from Q ≈ 50 on the sea adds to ∫_m|S|⁴ and
@@ -402,22 +406,22 @@ z ≥ 3 and no seed reaches the primes, "marginal" if 2 ≤ z < 3, "none" if |z|
 
 | band of Nℓ | n/ℓ | primes H₂ | Cramér, 16 seeds | z | seeds ≥ primes | verdict | surrogate R = 300 / 1000 / 3000 |
 |:---|---:|---:|:---|---:|---:|:---|---:|
-| [0.5, 1) | 760933–760933 | 0.685 | 0.642 ± 0.001 | +65.1 | 0/16 | excess | 0.681 / 0.685 / 0.687 |
-| [1, 10) | 380466–95117 | 0.570 | 0.547 ± 0.001 | +20.3 | 0/16 | excess | 0.570 / 0.570 / 0.572 |
-| [10, 100) | 47558–11890 | 0.531 | 0.506 ± 0.003 | +8.2 | 0/16 | excess | 0.526 / 0.526 / 0.532 |
-| [100, 1000) | 5945–743 | 0.524 | 0.498 ± 0.012 | +2.2 | 0/16 | marginal | 0.512 / 0.518 / 0.513 |
-| [1000, 3000) | 372–372 | 0.532 | 0.505 ± 0.026 | +1.0 | 1/16 | none | 0.467 / 0.488 / 0.525 |
+| [0.5, 1) | 760,933 | 0.685 | 0.642 ± 0.001 | +65.1 | 0/16 | excess | 0.681 / 0.685 / 0.687 |
+| [1, 10) | 380,466–95,117 | 0.570 | 0.547 ± 0.001 | +20.3 | 0/16 | excess | 0.570 / 0.570 / 0.572 |
+| [10, 100) | 47,558–11,890 | 0.531 | 0.506 ± 0.003 | +8.2 | 0/16 | excess | 0.526 / 0.526 / 0.532 |
+| [100, 1000) | 5,945–743 | 0.524 | 0.498 ± 0.012 | +2.2 | 0/16 | marginal | 0.512 / 0.518 / 0.513 |
+| [1000, 3000) | 372 | 0.532 | 0.505 ± 0.026 | +1.0 | 1/16 | none | 0.467 / 0.488 / 0.525 |
 | [3000, 50000) | 186–23 | 0.657 | 0.487 ± 0.084 | +2.0 | 0/16 | marginal | 0.532 / 0.650 / 0.586 |
 
 **(20,10)** (n = 8,367,136 minor points):
 
 | band of Nℓ | n/ℓ | primes H₂ | Cramér, 16 seeds | z | seeds ≥ primes | verdict | surrogate R = 300 / 1000 / 3000 |
 |:---|---:|---:|:---|---:|---:|:---|---:|
-| [0.5, 1) | 1045892–1045892 | 0.719 | 0.644 ± 0.001 | +137.9 | 0/16 | excess | 0.719 / 0.719 / 0.719 |
-| [1, 10) | 522946–130736 | 0.578 | 0.549 ± 0.001 | +32.5 | 0/16 | excess | 0.578 / 0.577 / 0.578 |
-| [10, 100) | 65368–16342 | 0.515 | 0.504 ± 0.002 | +6.5 | 0/16 | excess | 0.515 / 0.515 / 0.515 |
-| [100, 1000) | 8171–1021 | 0.497 | 0.497 ± 0.008 | +0.0 | 11/16 | none | 0.496 / 0.495 / 0.499 |
-| [1000, 3000) | 511–511 | 0.440 | 0.511 ± 0.032 | -2.2 | 15/16 | below | 0.439 / 0.439 / 0.448 |
+| [0.5, 1) | 1,045,892 | 0.719 | 0.644 ± 0.001 | +137.9 | 0/16 | excess | 0.719 / 0.719 / 0.719 |
+| [1, 10) | 522,946–130,736 | 0.578 | 0.549 ± 0.001 | +32.5 | 0/16 | excess | 0.578 / 0.577 / 0.578 |
+| [10, 100) | 65,368–16,342 | 0.515 | 0.504 ± 0.002 | +6.5 | 0/16 | excess | 0.515 / 0.515 / 0.515 |
+| [100, 1000) | 8,171–1,021 | 0.497 | 0.497 ± 0.008 | +0.0 | 11/16 | none | 0.496 / 0.495 / 0.499 |
+| [1000, 3000) | 511 | 0.440 | 0.511 ± 0.032 | -2.2 | 15/16 | below | 0.439 / 0.439 / 0.448 |
 | [3000, 50000) | 255–32 | 0.527 | 0.515 ± 0.065 | +0.2 | 7/16 | none | 0.538 / 0.557 / 0.545 |
 
 Drift removal (S₂ − |mean increment|², an exact identity) changes H₂ by at most 0.002 wherever n/ℓ ≥ 500.
@@ -458,8 +462,15 @@ and the deviations are larger.
 
 The Noah-only H₂ stays at 0.498–0.505 at (150,20); 0.499–0.512 at (20,10) wherever n/ℓ ≥ 1500 (check: 0.50 ± 0.02). H_½ well above ½ for the primes
 and for the phase-randomised walk, but not for Cramér, is the Noah effect (heavy tails), at (20,10) above all. The
-Joseph-only walk sits near ½. No long memory is detected; the rise at the largest lags at (150,20) has at most a few
-hundred independent increments and is reproduced by the deterministic surrogate.
+Joseph-only walk sits near ½.
+
+**No long memory.** The primes' H₂ exceeds the Cramér ensemble decisively only at Nℓ < 100, where the triangular
+envelope of the residual spikes sets it. Beyond that the verdicts are "marginal" or "none" at (150,20) and "none" or
+"below" at (20,10). The rise at the largest lags at (150,20) (H₂ = 0.657, z = 2.0) rests on
+186–23 independent increments; the surrogates give 0.532, 0.650 and
+0.586 for R = 300, 1000 and 3000, so this band is dominated by a few deterministic residual spikes and
+by noise, not by memory. The dip at (20,10), Nℓ ∈ [1000, 3000) (H₂ = 0.440, z = -2.2), is
+reproduced by every surrogate (0.439–0.448).
 
 **Spectral identity.** For the zero-filled cyclic walk, S₂^cyc(ℓ) = (1/M²)Σ_d|I_m(N + d)|²·sin²(πdℓ/M)/sin²(πd/M)
 exactly (certificate), so H at lag ℓ is a Fejér average of the minor-arc counts I_m(N') over |N' − N| ≲ M/ℓ. H is
@@ -660,7 +671,7 @@ The physics vocabulary raised along the way, sorted by whether it applies litera
 | the bulb size law is exact or proven | NO | empirical N² rule; normal-form explanation; prefactor 0.98–1.14; limbs only O(1/q) |
 | simple rules → hierarchy; Arnold tongues; mode locking | ANALOGY | no iteration, parameter or coupling in S; the shared root is Diophantine approximation |
 | ternary success = truncating the wild tail | LITERAL | sup_m\|S\|² = max(ψ/φ_min(Q), ψ/(π(c+½)))² within a factor 0.87–1.01 (the sea adds a few per cent in amplitude) |
-| binary wall = sea energy; equal energy per octave | LITERAL | 0.039–0.057 of ΣΛ² per octave for q ∈ [4, 128) |
+| binary wall = sea energy; equal energy per octave | LITERAL | 0.039–0.046 of ΣΛ² per octave for q ∈ [8, 128) |
 | large values are extremal | LITERAL (rigorous anchor) | within a factor 45–68 of the dual large sieve for σ ≥ 0.65 |
 | the Mandelbrot set's fractality | DISCLAIMER | boundary dimension 2, Misiurewicz points, small copies; none lies in the bulbs used here, none has a counterpart in S |
 
@@ -678,8 +689,8 @@ spikes q ≤ 1000 and a Gaussian sea of matched power reproduces all of them to 
 structure beyond it is detected.
 
 Where the minor arcs sit depends on (Q, c). At Q ≤ 20 they still carry the near-rational tail over one to two decades
-(Hill index 1.04–1.47, κ = 60–1045, the top 1% of cells holding 25–36%
-of the energy against 5–5% for Cramér). That is wild in the untruncated idealisation.
+(Hill index 1.04–1.47, κ = 60–1045, the top 1% of cells holding 25–36% of the energy
+against 5% for Cramér). That is wild in the untruncated idealisation.
 For Q ≳ 50 the arcs cut the tail off within a decade of the bulk. What remains is neither wild nor exponential:
 deterministic residual spikes on a sea (κ = 3.31 at (150,20) against
 2.00 for Cramér). The ternary bound needs exactly this truncation. Its sup is the largest
@@ -690,8 +701,9 @@ primes in progressions, V(q) ≈ X(log q − γ − log 2π − Σ_(p|q) log p/(
 admissible arc range √(N/2c) both grow like √N, for different reasons.
 
 The minor-arc walk is smooth below 1/N, as any degree-N sum is. Beyond that it is diffusive in its second moment, with
-H₂ ≈ 0.52–0.53: slightly but significantly above the Cramér ensemble, because of residual spikes. Its heavy tails show in
-H_½ ≈ 0.78 at (20,10) (a Noah effect). There is no evidence of long memory.
+H₂ ≈ 0.52–0.53 at (150,20): slightly but significantly above the Cramér ensemble at Nℓ ∈ [10, 100) (z = 8.2 at
+(150,20), 6.5 at (20,10)), because of residual spikes, and marginal or indistinguishable beyond. Its heavy tails show
+in H_½ ≈ 0.78 at (20,10) (a Noah effect). There is no evidence of long memory.
 
 The Mandelbrot set's bulbs share with the Farey forest the index set, the circle order and a q^(−2) size law, through
 Diophantine approximation, not dynamics. The mediant rule holds for the bulbs (140/140) but not
@@ -705,7 +717,7 @@ Three statements made while planning this phase do not survive measurement:
 
 - "The self-similarity cutoff is q* ≈ 270 and coincides with Q_max = 223." The cutoff, measured and predicted from the
   variance of primes in progressions, is q* = 521 (prediction 513). The figure 270 came from
-  √(X/log X), which is about 1.9× too low at every X. Q_max(c) = √(X/2c) comes from a different mechanism and depends on
+  √(X/log X), which is 1.9–2.3× too low at every X. Q_max(c) = √(X/2c) comes from a different mechanism and depends on
   c; the agreement at c = 10 was a coincidence, not three routes to one scale.
 - "The spikes are self-similar." They form a data collapse: heights scale by μ(q)/φ(q), widths stay 1/N. The literal
   self-affinity is statistical (the window maxima).
@@ -746,8 +758,8 @@ Hill index and kurtosis by (Q,c)).
 
 **Fig M4.** The minor-arc phasor walk is smooth below the band limit 1/N and crosses over to diffusive growth, as any
 degree-N sum does (Cramér too). For the primes the crossover follows the triangular envelope of the binary counts
-carried by the residual spikes (a, b), keeping H₂ slightly above ½ and above the Cramér band; the surrogate reproduces
-this. Heavy tails (Noah effect) show in H_½, and the phase-randomised walk keeps them (c). No long memory. The exact
+carried by the residual spikes (a, b), keeping H₂ slightly above ½ and above the Cramér band out to Nℓ ≈ 100; the
+surrogate reproduces this. Heavy tails (Noah effect) show in H_½, and the phase-randomised walk keeps them (c). No long memory. The exact
 spectral identity shows which neighbouring targets N' = N + d set H at each lag (d).
 
 ![Fig M5](figures/fig_M5_mandelbrot.png)

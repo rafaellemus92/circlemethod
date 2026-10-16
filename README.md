@@ -65,16 +65,16 @@ the tall near-rational spikes (Q large) and push the arc-edge sidelobes down (c 
 
 ## Running
 
-Needs Python 3.11 or newer (tested on 3.11 and 3.13), about 1.5 GB of free RAM and ~1 GB of disk for `cache/`.
+Needs Python 3.11 or newer (tested on 3.11 and 3.13), about 2 GB of free RAM and ~1 GB of disk for `cache/`.
 
 ```bash
 pip install numpy scipy matplotlib pytest
-python -m pytest -q tests          # ~15 s
+python -m pytest -q tests          # ~30 s
 python run_all.py                  # ~5 min on 4 cores, peak RSS ~1.4 GB; writes figures/ and results.md
 python run_all.py --figures        # redraw figures and results.md from cache/ctx.pkl
 python run_escapes.py              # escape routes E0–E5: ~4 min, peak RSS ~1.4 GB; needs run_all.py's cache
 python run_escapes.py --report     # redraw figures/fig_X*.png and escapes.md from cache/escapes.pkl
-python run_fractals.py             # fractal lens M1–M5, A1–A3: RUNTIME_PLACEHOLDER; needs run_all.py's and run_escapes.py's caches
+python run_fractals.py             # fractal lens M1–M5, A1–A3: ~10 min, peak RSS ~1.6 GB; needs run_all.py's and run_escapes.py's caches
 python run_fractals.py --report    # redraw figures/fig_M*.png and fractals.md from cache/fractals.pkl
 ```
 
@@ -134,3 +134,27 @@ tests, at the same X = 10^6, the classical relaxations under which the *magnitud
 
 Every K\*, r\* and z\* there is a finite-X statistic, with a decision margin (closes < 0.99 < undecided < 1.01 < fails),
 not a constant comparable to a theorem's.
+
+## The fractal lens: Mandelbrot's principles as measurements (`fractals.md`)
+
+`fractals.md` applies three of Mandelbrot's principles to the same objects at X = 10^6: scaling only between cutoffs
+(self-similarity is not self-affinity), roughness H versus intermittency D_s and f(α), and mild versus wild randomness
+(Noah versus Joseph). Every model is no-fit, every exponent is quoted with its window, and every result is checked
+against a surrogate made of the singular-series spikes q ≤ 1000 plus a Gaussian sea of matched power.
+
+* **One fact read five ways.** The Farey count #{a/q : μ(q) ≠ 0, φ(q) ≤ y} ~ y²/2 (constant exactly ½), applied to
+  spikes of height ψ/φ(q) and width 1/N, gives the minor-arc tail of index 1 in |S|², the coarse-grained straight-line
+  spectrum f(α) = α (offset −ln(2L)/ln(1/ε), L = 10.82), the large-value count exponent 2(1 − σ), the kurtosis, and equal
+  energy per octave of q (the L² wall). These are not independent confirmations.
+* **M1.** The spikes are a data collapse (heights scaled by μ(q)/φ(q), widths fixed at 1/N), not self-similar. The
+  collapse ends at q* = 521 (513 predicted, with no fit, from the variance of primes in progressions), which is not the
+  arc range √(N/2c).
+* **M3.** Minor arcs at Q ≤ 20 carry a tail that is wild in the untruncated idealisation; at Q ≳ 50 they are neither
+  wild nor exponential (residual spikes on a sea).
+* **M4.** The minor-arc walk is smooth below 1/N (generic), then diffusive with H₂ ≈ 0.52–0.53; heavy tails (Noah) show
+  in H_½ ≈ 0.78 at (20,10); no long memory.
+* **M5.** The Mandelbrot set's bulbs share the Farey index set, circle order and a q^(−2) size law with the spikes
+  (through Diophantine approximation, not dynamics); the mediant rule holds for bulbs in 140/140 neighbour pairs of F_21
+  and for spikes in 56/140.
+* A physics dictionary sorts the vocabulary (phasors, conservation and leakage, uncertainty principle, diffraction,
+  equipartition: literal; spin, time, fluids: not).

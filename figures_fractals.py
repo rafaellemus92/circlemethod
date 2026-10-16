@@ -32,13 +32,13 @@ def fig_M1(res, out):
     ax = axes[0, 0]
     xs = np.linspace(-10, 10, 2001)
     ax.plot(xs, np.abs(np.sinc(xs)), color=INK, lw=1.0, label="|sinc x| (the spike at 0)")
-    cols = [BLUE, AQUA, ORANGE, RED]
+    cols = [BLUE, AQUA, VIOLET, RED]
     for z, col in zip(res["m1_zoom"], cols):
         lo, hi = z["class"]
-        ax.plot(z["centres"], z["median"], color=col, lw=1.1, label=f"q in [{lo}, {hi}] (median of {z['n_q']} q)")
-        ax.fill_between(z["centres"], z["p10"], z["p90"], color=col, alpha=0.15, lw=0)
+        ax.plot(z["centres"], z["median"], color=col, lw=1.2, label=f"q in [{lo}, {hi}] (median of {z['n_q']} q)")
+        ax.fill_between(z["centres"], z["p10"], z["p90"], color=col, alpha=0.10, lw=0)
     ax.set_yscale("log")
-    ax.set_ylim(1e-3, 20)
+    ax.set_ylim(1e-3, 300)
     ax.set_xlabel("x = N(α − a/q)   (the width is never rescaled)")
     ax.set_ylabel("|S(α)| φ(q)/ψ   (height rescaled by φ(q)/ψ)")
     ax.set_title("(a) data collapse onto the spike at 0, and its failure (10–90% bands)")
@@ -57,15 +57,15 @@ def fig_M1(res, out):
     ax.plot([r["phi"] for r in pr], [r["rice_sd"] for r in pr], color=INK2, lw=1.0)
     qs = res["m1_qstar"][[q["X"] for q in res["m1_qstar"]].index(X)]["q_star_fg"]
     ax.axvline(qs - 1, color=MUTED, lw=0.8)
-    ax.text(qs * 1.05, 0.012, f"φ(q*) ≈ {qs - 1:.0f}: spike = sea", fontsize=7.5, color=INK2)
+    ax.text(qs * 1.05, 15, f"φ(q*) ≈ {qs - 1:.0f}: spike = sea", fontsize=7.5, color=INK2)
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_ylim(1e-2, 30)
     ax.set_xlabel("φ(q)   (squarefree q ≤ 10⁴)")
     ax.set_ylabel("rescaled spike height")
     ax.set_title("(b) collapse error predicted by the variance of primes in progressions")
-    ax.legend(loc="upper left", fontsize=7)
-    ins = ax.inset_axes([0.62, 0.08, 0.36, 0.33])
+    ax.legend(loc="lower right", fontsize=7)
+    ins = ax.inset_axes([0.07, 0.67, 0.31, 0.25])
     ins.scatter(ph, [r["cos"] for r in rows], s=2, color=VIOLET, lw=0, rasterized=True)
     ins.plot([r["phi"] for r in pr], [r["rice_cos"] for r in pr], color=INK2, lw=0.8)
     ins.set_xscale("log")
@@ -93,7 +93,7 @@ def fig_M1(res, out):
     for tag in ("primes", "hybrid", "cramer"):
         ax.plot(NL, wm[tag], marker="o", ms=3.5, lw=1.1, label=MEAS_LABEL[tag], **MEAS_STYLE[tag])
     ax.axhline(math.sqrt(res["L2"]) / psi, color=MUTED, lw=0.8)
-    ax.text(NL[0], math.sqrt(res["L2"]) / psi * 1.15, "sea rms √ΣΛ²/ψ", fontsize=7, color=INK2)
+    ax.text(3000, math.sqrt(res["L2"]) / psi * 0.8, "sea rms √ΣΛ²/ψ", fontsize=7, color=INK2, va="top")
     ax.axvspan(120, 16000, color=GRID, alpha=0.6, zorder=0)
     x0, y0 = 300.0, 0.01
     ax.plot([x0, x0 * 10, x0 * 10, x0], [y0, y0, y0 * math.sqrt(10), y0], color=INK2, lw=0.8)
@@ -117,7 +117,8 @@ def fig_M2(res, out):
     ax = axes[0, 0]
     for j, col in ((3, VIOLET), (5, BLUE), (6, AQUA), (9, ORANGE)):
         d = m2["rank_mass"][("primes", j)]
-        ax.plot(d["ranks"], d["comp"], color=col, lw=1.1, label=f"primes, Nε = {X * 2**j / M:.1f}")
+        ok = d["ranks"] <= 0.95 * M / 2**j                  # the last boxes hold the removed atoms (mass ~ 0)
+        ax.plot(d["ranks"][ok], d["comp"][ok], color=col, lw=1.1, label=f"primes, Nε = {X * 2**j / M:.1f}")
     st = m2["staircase"]
     r_end = st["rank_end"]
     r_start = np.r_[1, r_end[:-1] + 1]
@@ -140,7 +141,7 @@ def fig_M2(res, out):
     for (j, d), col in zip(sorted(m2["cumulative"].items()), (BLUE, AQUA, ORANGE)):
         a = d["alpha"]
         ok = a >= d["alpha_lo"]
-        ax.plot(a[ok], d["f"][ok], color=col, lw=1.4, label=f"f₍<₎(α), ε = 2^{int(round(math.log2(d['eps'])))}")
+        ax.plot(a[ok], d["f"][ok], color=col, lw=1.4, label=rf"$f_<(\alpha)$, ε = $2^{{{int(round(math.log2(d['eps'])))}}}$")
         ax.plot(a, a + d["offset"], color=col, lw=0.8, ls=(0, (4, 2)))
     cj = m2["cj"]
     ax.plot([cj[s]["alpha"][0] for s in cj], [cj[s]["f"][0] for s in cj], "o", ms=3.5, color=INK, ls="none",
@@ -160,14 +161,14 @@ def fig_M2(res, out):
         for tag in ("primes", "hybrid", "cramer"):
             st_ = MEAS_STYLE[tag]
             ax.plot(Ne, m2["Ds"][tag][s], color=col, ls=st_["ls"], lw=1.1 if tag == "primes" else 0.9)
-        ax.plot([], [], color=col, lw=1.1, label=f"D_{s:g}")
+        ax.plot([], [], color=col, lw=1.1, label=rf"$D_{{{s:g}}}$")
     for tag in ("primes", "hybrid", "cramer"):
         ax.plot([], [], color=INK2, ls=MEAS_STYLE[tag]["ls"], label=MEAS_LABEL[tag])
     ax.axvspan(Ne[0] * 0.8, 15, color=GRID, alpha=0.6, zorder=0)
     ax.set_xscale("log")
     ax.set_ylim(-0.05, 1.1)
     ax.set_xlabel("box size Nε")
-    ax.set_ylabel("local D_s")
+    ax.set_ylabel(r"local $D_s$")
     ax.set_title("(c) generalized dimensions against scale (grey: Nε < 15)")
     ax.legend(loc="lower right", fontsize=6.6, ncol=2)
     ax = axes[1, 0]
@@ -176,9 +177,9 @@ def fig_M2(res, out):
         ax.plot(sg, [m2["Ds_s"][tag][s] for s in sg], marker="o", ms=3.5, lw=1.1, label=MEAS_LABEL[tag], **MEAS_STYLE[tag])
     ax.plot([0.5, 1, 1, 3], [1, 1, 0, 0], color=INK2, lw=0.8, ls=(0, (4, 2)), label="N → ∞ limit (ε = N^(−θ)): not reached")
     ax.set_xlabel("moment order s")
-    ax.set_ylabel("D_s at Nε 15 → 31")
+    ax.set_ylabel(r"$D_s$ between Nε = 15 and 31")
     ax.set_title("(d) a broad crossover in s, not a step")
-    ax.legend(loc="upper right", fontsize=7)
+    ax.legend(loc="center right", fontsize=7)
     ax = axes[1, 1]
     Nm = np.array([X * 2 ** (j + 0.5) / M for j in range(14)])
     for pr, d in m2["minor_D2"].items():
@@ -194,11 +195,14 @@ def fig_M2(res, out):
     ax.set_xlabel("box size Nε")
     ax.set_ylabel("local D₂ of the minor-arc measure")
     ax.set_title("(e) on the minor arcs: residual spikes keep D₂ low at small Q")
-    ax.legend(loc="lower right", fontsize=6.8, ncol=2)
+    ax.legend(loc="lower left", fontsize=6.5, ncol=1)
     ax = axes[1, 2]
     cols = [VIOLET, MAGENTA, AQUA, ORANGE, BLUE, RED]
     for d, col in zip(m2["xscaling"], cols):
-        ax.plot(d["ranks"], d["comp"], color=col, lw=1.1, label=f"X = {d['X']:.0e}, L = {d['L']:.2f}, Nε = {d['Neps']:.1f}")
+        ok = d["ranks"] <= 0.95 * d["X"] / d["Neps"]       # number of boxes = X / (N eps)
+        m, e = f"{d['X']:.0e}".split("e")
+        xs = (f"{m}·" if m != "1" else "") + "10" + str(int(e)).translate(str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
+        ax.plot(d["ranks"][ok], d["comp"][ok], color=col, lw=1.1, label=f"X = {xs}, L = {d['L']:.2f}, Nε = {d['Neps']:.1f}")
     ax.axhline(1.0, color=INK2, lw=0.8)
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -228,9 +232,11 @@ def fig_M3(res, out):
                 label="spike sum, semi-analytic (no fit)")
         sa = ts <= tmax
         ax.plot(ts[sa], r["asymptote"][sa], color=INK2, lw=0.8, ls=(0, (4, 2)), label="asymptote ψ²/(2N|m|·t·mean)")
-        ax.plot(ts, np.exp(-ts), color=MUTED, lw=0.6, ls=(0, (2, 2)), label="e^(−t) (exponential)")
+        ax.plot(ts, np.exp(-ts), color=INK2, lw=0.7, ls=(0, (5, 1.5, 1, 1.5)), label="e^(−t) (exponential)")
         ax.axvline(tmax, color=PAIR_COL[pr], lw=0.9)
-        ax.text(tmax * 0.95, 0.3, f"max: {r['sup_pred']['active']}", fontsize=6.6, ha="right", color=INK2, rotation=90, va="top")
+        sp = r["sup_pred"]
+        act = f"q = {sp['q']} (φ = {sp['phi']})" if sp["spike"] >= sp["sidelobe"] else "arc-edge sidelobe of q = 1, 2"
+        ax.text(tmax * 0.95, 0.3, f"max: {act}", fontsize=6.6, ha="right", color=INK2, rotation=90, va="top")
         lo, hi = r["pareto_range"]
         if hi >= 10 * lo:
             ax.axvspan(lo, hi, color=GRID, alpha=0.6, zorder=0)
@@ -255,22 +261,24 @@ def fig_M3(res, out):
         else:
             ax.plot(x, y, mk, color=MUTED, ms=7, mew=1.5, ls="none", label="Hill index (k = 1000), Cramér")
     ax.axhline(1.0, color=INK, lw=0.9)
-    ax.text(len(tp) - 0.6, 1.05, "index 1 in |S|² = 2 in |S|: wild/pre-wild boundary for |S|", fontsize=6.6, ha="right")
+    ax.text(-0.4, 0.86, "index 1 in |S|² = 2 in |S|:\nwild/pre-wild boundary for |S|", fontsize=6.6, ha="left", va="top")
     ax.axhline(2.0, color=INK2, lw=0.8, ls=(0, (4, 2)))
-    ax.text(len(tp) - 0.6, 2.08, "above 2: variance of |S|² finite", fontsize=6.6, ha="right")
+    ax.text(-0.4, 2.15, "above 2: variance of |S|² finite", fontsize=6.6, ha="left")
     ax.set_xticks(x, [f"({p[0]},{p[1]})" for p in tp], fontsize=7.5)
     ax.set_ylabel("Hill tail index of |S|² (cell maxima)")
-    ax.set_ylim(0, 8)
+    ax.set_ylim(0, 12)
+    ax.set_xlim(-0.5, len(tp) - 0.5)
     ax2 = ax.twinx()
     ax2.plot(x, [m3[p]["primes"]["kappa"] for p in tp], "s", color=VIOLET, ms=6, ls="none", label="κ measured")
     km = [m3[p]["E4_model"] / (m3[p]["primes"]["P_m"] ** 2 / m3[p]["meas_m"]) for p in tp]
     ax2.plot(x, km, "s", mfc="none", mec=VIOLET, ms=9, ls="none", label="κ from the fourth-moment model")
     ax2.set_yscale("log")
+    ax2.set_ylim(1, 1e4)
     ax2.set_ylabel("minor-arc kurtosis κ (log)")
     ax2.grid(False)
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=6.8)
+    ax.legend(h1 + h2, l1 + l2, loc="upper center", fontsize=6.8, ncol=2)
     ax.set_title("(f) wild at small Q, neither wild nor exponential at large Q")
     _suptitle(fig, "Fig M3. Mild versus wild on the minor arcs, by (Q, c): the tail of |S|² is the Farey count again, truncated by the arcs")
     fig.tight_layout()
@@ -331,13 +339,13 @@ def fig_M4(res, out):
                 d = st.get(var, {}).get(p) if var != "full" else st["full"].get(p)
                 vals.append(float(np.mean(d["H"][sel])) if d is not None else np.nan)
             ax.bar(np.arange(len(groups)) + (k - 2.5) * width, vals, width, color=col, hatch=hatch, edgecolor=SURF, lw=0.6,
-                   label=f"H_{p:g}, {pr}")
+                   label=rf"$H_{{{p:g}}}$, {pr}")
             k += 1
     ax.axhline(0.5, color=INK, lw=0.8)
     ax.set_xticks(np.arange(len(groups)), names, fontsize=7.5)
-    ax.set_ylabel("H_p, mean over Nℓ ∈ [4, 1000]")
+    ax.set_ylabel("local exponent, mean over Nℓ ∈ [4, 1000]")
     ax.set_ylim(0, 1.0)
-    ax.set_title("(c) heavy tails (Noah) show in H_½; no long memory (Joseph)")
+    ax.set_title(r"(c) heavy tails (Noah) show in $H_{1/2}$; no long memory (Joseph)")
     ax.legend(loc="upper right", fontsize=6.6, ncol=2)
     ax = axes[1, 1]
     sp = res["spectral"][("primes", 150, 20)]
@@ -351,14 +359,15 @@ def fig_M4(res, out):
     for xx in (1, 100, 3906):
         L = xx * M / X
         ax.axvline(M / L, color=MUTED, lw=0.7)
-        ax.text(M / L * 1.1, ax.get_ylim()[1] if False else max(sp["P_binned"]) * 0.5, f"M/ℓ at Nℓ/M = {xx}", fontsize=6.6, rotation=90, color=INK2)
+        ax.text(M / L * 1.15, max(sp["P_binned"]) * 4, f"M/ℓ at\nNℓ/M = {xx}", fontsize=6.6, color=INK2, va="center")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("|d| = |N′ − N| (neighbouring targets)")
     ax.set_ylabel("binned |I_m(N + d)|²")
     ax.set_title("(d) H is a Fejér average of the minor-arc counts at nearby targets, (150, 20)")
+    ax.set_ylim(top=max(sp["P_binned"]) * 12)
     ax.legend(loc="lower left", fontsize=7)
-    ins = ax.inset_axes([0.62, 0.62, 0.35, 0.3])
+    ins = ax.inset_axes([0.36, 0.08, 0.36, 0.3])
     ins.plot(xl, np.abs(sp["S2_spectral"][:-1] / sp["S2_direct"][:-1] - 1) + 1e-18, color=INK, lw=0.8)
     ins.set_xscale("log")
     ins.set_yscale("log")
@@ -382,7 +391,7 @@ def fig_M5(res, out):
     cm = LinearSegmentedColormap.from_list("m", [INK, "#2a3f5f", BLUE, "#cde2fb", SURF])
     ax.imshow(shade, extent=(x0, x1, y0, y1), cmap=cm, origin="upper", interpolation="nearest")
     for b in m5["bulbs"]:
-        if b["q"] <= 8:
+        if b["q"] <= 6:
             from fractals import cardioid_root
             for sgn in (1, -1):
                 r = cardioid_root(b["p"], b["q"])
@@ -392,19 +401,23 @@ def fig_M5(res, out):
                             textcoords="offset points", fontsize=6.5, color=ORANGE)
     ax.set_xlabel("Re c")
     ax.set_ylabel("Im c")
-    ax.set_title("(a) the Mandelbrot set; bulb roots on the main cardioid labelled by p/q (q ≤ 8)")
+    ax.set_title("(a) the Mandelbrot set; bulb roots on the main cardioid labelled by p/q (q ≤ 6)")
     ax.grid(False)
     ax = axes[0, 1]
     bl = m5["bulbs"]
-    sc = ax.scatter([b["theta"] for b in bl], [b["diam_half"] for b in bl], c=[b["q"] for b in bl], cmap="viridis", s=14,
-                    label="diam/2 ÷ sin(πp/q)/q²")
-    ax.scatter([b["theta"] for b in bl], [b["centre_root"] for b in bl], c=[b["q"] for b in bl], cmap="viridis", s=14,
-               marker="o", facecolors="none", label="|centre − root| ÷ sin(πp/q)/q²")
+    from matplotlib.colors import Normalize
+    norm = Normalize(vmin=min(b["q"] for b in bl), vmax=max(b["q"] for b in bl))
+    sc = ax.scatter([b["theta"] for b in bl], [b["diam_half"] for b in bl], c=[b["q"] for b in bl], cmap="viridis", norm=norm,
+                    s=14, label="diam/2 ÷ sin(πp/q)/q²  (filled)")
+    ax.scatter([b["theta"] for b in bl], [b["centre_root"] for b in bl], facecolors="none",
+               edgecolors=plt.get_cmap("viridis")(norm([b["q"] for b in bl])), s=16, lw=0.8,
+               label="|centre − root| ÷ sin(πp/q)/q²  (hollow)")
     ax.axhline(1.0, color=INK, lw=0.8)
     fig.colorbar(sc, ax=ax, label="q")
     ax.set_xlabel("θ = p/q")
     ax.set_ylabel("measured size ÷ leading-order estimate")
-    ax.set_title("(b) Mandelbrot's empirical N² rule: prefactor 0.98–1.16, depending on p/q")
+    pf = [b["diam_half"] for b in bl]
+    ax.set_title(f"(b) Mandelbrot's empirical N² rule: prefactor {min(pf):.2f}–{max(pf):.2f} (q ≤ 40), depending on p/q")
     ax.legend(loc="upper left", fontsize=7.5)
     ax = axes[1, 0]
     sz = m5["sizes"]
@@ -420,6 +433,8 @@ def fig_M5(res, out):
     ax.plot([3, 30], [0.2, 0.2 / 100], color=MUTED, lw=0.8, ls=(0, (4, 2)), label="slope −2 guide")
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_xticks([2, 3, 5, 10, 20, 40], ["2", "3", "5", "10", "20", "40"])
+    ax.minorticks_off()
     ax.set_xlabel("denominator q")
     ax.set_ylabel("size")
     ax.set_title("(c) three q⁻² families: bulbs, spike masses (not heights), Ford circles")
@@ -487,7 +502,7 @@ def fig_M6(res, out):
     ax.set_ylabel("count")
     ax.set_title("(b) large values: count exponent 2(1 − σ) (Jarník–Besicovitch shadow)")
     ax.legend(loc="lower left", fontsize=7)
-    ins = ax.inset_axes([0.6, 0.58, 0.37, 0.36])
+    ins = ax.inset_axes([0.62, 0.63, 0.35, 0.31])
     sig = np.array(a2["sigma"])
     cells = np.array(a2["cells"], dtype=float)
     slope = -np.diff(np.log(cells)) / (np.diff(sig) * math.log(res["X"]))
@@ -498,14 +513,14 @@ def fig_M6(res, out):
     ax = axes[2]
     un = res["uncertainty"]
     Ls = sorted(un["sharp"])
-    ax.plot(Ls, [un["sharp"][L]["product"] for L in Ls], "o-", color=RED, ms=6, label="sharp cutoff n ≤ N: σ_x·σ_ξ over |Nβ| ≤ L")
+    ax.plot(Ls, [un["sharp"][L]["product"] for L in Ls], "o-", color=RED, ms=6, label=r"sharp cutoff n ≤ N: $\sigma_x\sigma_\xi$ over |Nβ| ≤ L")
     Lb = sorted(un["bump"])
-    ax.plot(Lb, [un["bump"][L]["product"] for L in Lb], "s-", color=AQUA, ms=6, label="smooth bump η: σ_x·σ_ξ")
+    ax.plot(Lb, [un["bump"][L]["product"] for L in Lb], "s-", color=AQUA, ms=6, label=r"smooth bump η: $\sigma_x\sigma_\xi$")
     ax.axhline(1 / (4 * math.pi), color=INK, lw=1.0, ls=(0, (4, 2)), label="Heisenberg–Gabor bound 1/(4π) (ħ → 1/2π)")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("frequency window L (units of 1/N)")
-    ax.set_ylabel("σ_n · σ_α")
+    ax.set_ylabel(r"$\sigma_n\,\sigma_\alpha$")
     ax.set_title("(c) the uncertainty principle: sharp sums have infinite spread (leakage)")
     ax.legend(loc="upper left", fontsize=7)
     _suptitle(fig, "Fig M6. Two more readings of the Farey count, and the uncertainty principle behind the arc widths")

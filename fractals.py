@@ -354,7 +354,7 @@ def sup_prediction(Q: int, c: float, psi: float, mu: np.ndarray, phi: np.ndarray
     pm, q = phi_min_above(Q, mu, phi)
     spike, side = psi / pm, psi / (math.pi * (c + 0.5))
     return {"sup2": max(spike, side) ** 2, "spike": spike, "sidelobe": side, "q": q, "phi": pm,
-            "active": f"q = {q} (phi = {pm})" if spike >= side else "arc-edge sidelobe of q = 1, 2"}
+            "active": f"q = {q} (φ = {pm})" if spike >= side else "arc-edge sidelobe of q = 1, 2"}
 
 
 def sinc4_tail(c: float, xmax: float = 4000.0, n: int = 4_000_001) -> float:

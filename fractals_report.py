@@ -101,6 +101,19 @@ def comp_at(d, i):
     return float(d["comp"][k[0]]) if len(k) else None
 
 
+def pct_range(vals) -> str:
+    lo, hi = round(100 * min(vals)), round(100 * max(vals))
+    return f"{lo}%" if lo == hi else f"{lo}–{hi}%"
+
+
+def active(sp) -> str:
+    return f"q = {sp['q']} (φ = {sp['phi']})" if sp["spike"] >= sp["sidelobe"] else "arc-edge sidelobe of q = 1, 2"
+
+
+def nrange(a, b) -> str:
+    return f"{a:,.0f}" if round(a) == round(b) else f"{a:,.0f}–{b:,.0f}"
+
+
 def fmt(x, spec: str = ".2f") -> str:
     return "—" if x is None or not np.isfinite(x) else format(x, spec)
 
@@ -166,7 +179,7 @@ def headline(res) -> str:
     pref = [b["diam_half"] for b in m5["bulbs"]]
     med = m5["mediant"][21]
     oc = res["a1"]["octaves"]
-    octs = [o["frac"] for o in oc if 2 <= o["j"] <= 6]
+    octs = [o["frac"] for o in oc if 3 <= o["j"] <= 6]
     a2 = res["a2"]
     sig = list(np.round(a2["sigma"], 2))
     i70 = sig.index(0.7)
@@ -193,7 +206,7 @@ def headline(res) -> str:
          f"mediant rule {med['bulb_mediant']}/{med['pairs']} (bulbs) vs {med['spike_mediant']}/{med['pairs']} (spikes)",
          "same index set and circle order, q⁻² sizes through Diophantine approximation; not shared dynamics"],
         ["A1 octaves of q", "how is the energy spread over denominators?",
-         f"{rng(octs, 3)} of ΣΛ² per octave for q ∈ [4, 128)",
+         f"{rng(octs, 3)} of ΣΛ² per octave for q ∈ [8, 128)",
          "equal energy per octave: the L² wall in fractal language"],
         ["A2 large values", "how many cells have |S| ≥ N^σ?",
          f"count exponent {a2['cells'][i70]} cells at σ = 0.7; large sieve bound / cells = "
@@ -234,6 +247,8 @@ def sec_m1(res) -> str:
     med_ratio = float(np.median([r["V"] / (X * fg_any(r["q"])) for r in prs]))
     comp = [r for r in res["m1_rows"] if r["q"] in (210, 301, 1001)]
     e2v = ", ".join(f"{r['E2'] * psi**2 / (r['phi'] ** 2 * r['V']):.2f} at q = {r['q']}" for r in comp)
+    e2p = row_q(res, 499)
+    e2p = e2p["E2"] * psi**2 / (e2p["phi"] ** 2 * e2p["V"])
     t_v = _table(["prime q", "V(q)/X", "FG(q)", "ratio"], vrows)
     zrows = []
     for z in res["m1_zoom"]:
@@ -278,15 +293,16 @@ heights scatter by a factor of two (the collapse has failed). By q ≈ 2000–40
 **(b) The collapse error is predicted by the variance of primes in progressions.** Write Z_a = μ(q)S(a/q)φ(q)/ψ − 1.
 Over the reduced a, E|Z|² and E[Z²] are exact second moments (E[Z²] is real, because a → −a conjugates). The
 residue-class variance V(q) = Σ_{{(r,q)=1}}(ψ(X;q,r) − ψ_c/φ(q))² (Barban–Davenport–Halberstam, Montgomery–Hooley)
-behaves like X·FG(q), FG(q) = ln q − γ − ln 2π − Σ_{{p|q}} ln p/(p−1) (Friedlander–Goldston form). Three predictions per q:
+behaves like X·FG(q), FG(q) = ln q − γ − ln 2π − Σ_{{p|q}} ln p/(p−1) (Friedlander–Goldston form). Two models:
 a **Beckmann model** y = |1 + X + iY| with X, Y independent Gaussians carrying the exact E|Z|², E[Z²] (an 80×80
 Gauss–Hermite rule); and for prime q the **Rice-FG closed form** with σ² = (q−1)²X·FG(q)/ψ², which uses no data at all.
 
 {t_b}
 
 The isotropic Rice model with the measured E|Z|² gets the spike-dominated regime wrong: at q = 210 it gives sd
-{iso['sd']:.3f} against the measured {r210['sd']:.3f}; Beckmann's anisotropy fixes it. For composite q the off-diagonal
-Ramanujan-sum terms matter (E|Z|²φ²/(ψ²V)·… = {e2v}), so the FG closed form is used for prime q only. V(q)/X against FG:
+{iso['sd']:.3f} against the measured {r210['sd']:.3f}; Beckmann's anisotropy fixes it. For prime q,
+E|Z|²·ψ²/(φ(q)²V(q)) = q/(q − 1) up to prime-power classes ({e2p:.3f} at q = 499). For composite q the off-diagonal
+Ramanujan-sum terms make it {e2v}, so the FG closed form is used for prime q only. V(q)/X against FG:
 
 {t_v}
 
@@ -300,8 +316,9 @@ K(q) = √(mean_a |S(a/q) + ψ_c/(q−1)|²)·(q−1)/ψ exceeds 1:
 
 {t_q}
 
-At X = 10^6, q* = {q1['q_star']} measured against {q1['q_star_fg']:.0f} predicted. The plan's √(X/log X) is about
-{np.mean([d['q_star_fg'] / d['sqrt_X_logX'] for d in res['m1_qstar']]):.1f}× too low; ψ/√ΣΛ² is an order of magnitude only.
+At X = 10^6, q* = {q1['q_star']} measured against {q1['q_star_fg']:.0f} predicted. The early estimate √(X/log X) is
+{rng([d['q_star_fg'] / d['sqrt_X_logX'] for d in res['m1_qstar']], 1)}× too low at every X; ψ/√ΣΛ² is an order of
+magnitude only.
 q* and the largest admissible arc range Q_max = √(X/2c) both grow like √X up to logarithms, **for different reasons**:
 q* compares spike height with the sea; Q_max compares arc width c/N with the Farey spacing 1/Q², and depends on c. They
 do not coincide.
@@ -383,10 +400,11 @@ def sec_m2(res) -> str:
     xrows = []
     for d in xs:
         sel = (d["ranks"] >= 8) & (d["ranks"] <= 256)
+        p2 = [comp_at(d, 2**k) for k in range(3, 9)]
         v512 = comp_at(d, 512)
         xrows.append([f"{d['X']:.0e}".replace("e+0", "e"), f"{d['L']:.3f}", f"{d['L'] - math.log(d['X']):+.3f}", f"{d['Neps']:.1f}",
-                      rng(d["comp"][sel]), f"{v512:.2f}" if v512 is not None else "—"])
-    t_x = _table(["X", "L(X)", "L − ln X", "Nε", "2L·i·m₍ᵢ₎, i ∈ [8, 256]", "at i = 512"], xrows)
+                      f"{np.median(d['comp'][sel]):.2f}", rng(p2), f"{v512:.2f}" if v512 is not None else "—"])
+    t_x = _table(["X", "L(X)", "L − ln X", "Nε", "median of 2L·i·m₍ᵢ₎, i ∈ [8, 256]", "at i = 8, 16, …, 256", "at i = 512"], xrows)
     return f"""## M2. Intermittency of the spectral measure: the Farey spectrum (fig_M2)
 
 The measure is μ = |S|²dα with the atoms at 0 and 1/2 removed, normalised to 1. Boxes hold 2^j grid points:
@@ -445,7 +463,9 @@ and the boxes of the full-circle measure with α < 0.9 that lie entirely in the 
 
 {t_m}
 
-**(f) X-scaling.** The compensated rank–mass at the box with Nε nearest 8, for six X, each with its own L(X):
+**(f) X-scaling.** The compensated rank–mass at the box with Nε nearest 8, for six X, each with its own L(X). Between
+consecutive φ-groups the curve is a sawtooth (the full range over i ∈ [8, 256] is about 0.7–1.4 at every X ≥ 10^5), so
+the table gives the median and the values at powers of 2:
 
 {t_x}
 
@@ -466,7 +486,7 @@ def sec_m3(res) -> str:
         km = r["E4_model"] / (p["P_m"] ** 2 / r["meas_m"])
         lo, hi = r["pareto_range"]
         rows.append([pair(pr), f"{p['kappa']:.4g}", f"{km / p['kappa']:.3f}", f"{p['sup2'] / p['mean_m']:.1f}",
-                     f"{r['sup_pred']['sup2'] / p['sup2']:.3f}", r["sup_pred"]["active"],
+                     f"{r['sup_pred']['sup2'] / p['sup2']:.3f}", active(r["sup_pred"]),
                      f"[5, {hi:.0f}]" if hi >= 10 * lo else "none",
                      " / ".join(f"{p['hill'][k]:.2f}" for k in (300, 1000, 10000)),
                      f"{r['cramer']['hill'][1000]:.2f}", f"{r['cramer']['kappa']:.3f}"])
@@ -554,7 +574,7 @@ def sec_m4(res) -> str:
     out = []
     for pr in WALK:
         bs = band_stats(res, pr)
-        rows = [[f"[{b['band'][0]:g}, {b['band'][1]:g})", f"{b['indep'][0]:.0f}–{b['indep'][1]:.0f}", f"{b['primes']:.3f}",
+        rows = [[f"[{b['band'][0]:g}, {b['band'][1]:g})", nrange(*b["indep"]), f"{b['primes']:.3f}",
                  f"{b['mean']:.3f} ± {b['sd']:.3f}", f"{b['z']:+.1f}", f"{b['nge']}/{b['nseeds']}", b["verdict"],
                  f"{b['hyb'][300]:.3f} / {b['hyb'][1000]:.3f} / {b['hyb'][3000]:.3f}"] for b in bs]
         out.append(f"**{pair(pr)}** (n = {res['walks'][('primes',) + pr]['n']:,} minor points):\n\n" + _table(
@@ -570,6 +590,10 @@ def sec_m4(res) -> str:
                       f"{np.mean([e['raw'][j] for e in res['ensemble'][(20, 10)]]):.3f}"])
     t_tri = _table(["Nℓ/M", "triangular envelope (no fit)", "primes (20,10)", "primes (150,20)", "Cramér mean (20,10)"], trows)
     dev20 = max(abs(H_triangular(float(x[j])) - res["walks"][("primes", 20, 10)]["full"][2.0]["H"][j]) for j in range(9))
+    bs150 = {b["band"]: b for b in band_stats(res, (150, 20))}
+    bs20 = {b["band"]: b for b in band_stats(res, (20, 10))}
+    big = bs150[(3000, 50000)]
+    dip = bs20[(1000, 3000)]
     noah = []
     for pr in WALK:
         n = res["walks"][("primes",) + pr]["n"]
@@ -617,8 +641,15 @@ and the deviations are larger.
 
 The Noah-only H₂ stays at {"; ".join(noah)} wherever n/ℓ ≥ 1500 (check: 0.50 ± 0.02). H_½ well above ½ for the primes
 and for the phase-randomised walk, but not for Cramér, is the Noah effect (heavy tails), at (20,10) above all. The
-Joseph-only walk sits near ½. No long memory is detected; the rise at the largest lags at (150,20) has at most a few
-hundred independent increments and is reproduced by the deterministic surrogate.
+Joseph-only walk sits near ½.
+
+**No long memory.** The primes' H₂ exceeds the Cramér ensemble decisively only at Nℓ < 100, where the triangular
+envelope of the residual spikes sets it. Beyond that the verdicts are "marginal" or "none" at (150,20) and "none" or
+"below" at (20,10). The rise at the largest lags at (150,20) (H₂ = {big['primes']:.3f}, z = {big['z']:.1f}) rests on
+{nrange(*big['indep'])} independent increments; the surrogates give {big['hyb'][300]:.3f}, {big['hyb'][1000]:.3f} and
+{big['hyb'][3000]:.3f} for R = 300, 1000 and 3000, so this band is dominated by a few deterministic residual spikes and
+by noise, not by memory. The dip at (20,10), Nℓ ∈ [1000, 3000) (H₂ = {dip['primes']:.3f}, z = {dip['z']:.1f}), is
+reproduced by every surrogate ({dip['hyb'][300]:.3f}–{max(dip['hyb'].values()):.3f}).
 
 **Spectral identity.** For the zero-filled cyclic walk, S₂^cyc(ℓ) = (1/M²)Σ_d|I_m(N + d)|²·sin²(πdℓ/M)/sin²(πd/M)
 exactly (certificate), so H at lag ℓ is a Fejér average of the minor-arc counts I_m(N') over |N' − N| ≲ M/ℓ. H is
@@ -778,6 +809,8 @@ def sec_physics(res) -> str:
             f"{100 * sh['> 2X']:.2f}% beyond 2X (escapes.md E1)") if sh else "see escapes.md E1"
     r101 = row_q(res, 101)
     r2003 = row_q(res, 2003)
+    un = res["uncertainty"]["bump"]
+    bump = un[max(un)]
     rows = [
         ["phasors, interference (Feynman's arrows in *QED*: amplitude = Σ e^(iφ))", "LITERAL",
          "S(α) = Σ Λ(n)e(nα) is a sum of arrows; spikes are constructive interference at rationals"],
@@ -791,7 +824,8 @@ def sec_physics(res) -> str:
          "∫_0^1 e((n₁ + n₂ − N)α)dα = δ: only the full circle enforces n₁ + n₂ = N"],
         ["leakage when the integral is restricted to arcs", "LITERAL", leak],
         ["energy conservation", "LITERAL", "Parseval (1/M)Σ|S|² = ΣΛ² (certificate)"],
-        ["uncertainty principle, ħ → 1/(2π)", "LITERAL", "A3: sharp edges have unbounded σ_n·σ_α; the smooth bump sits at 1.19× the bound"],
+        ["uncertainty principle, ħ → 1/(2π)", "LITERAL",
+         f"A3: sharp edges have unbounded σ_n·σ_α; the smooth bump sits at {bump['product'] / bump['bound']:.2f}× the bound"],
         ["the circle as a Brillouin zone; |S|² as the primes' diffraction pattern", "LITERAL (re-reading)",
          "n ∈ ℤ ⇒ α ∈ ℝ/ℤ; Bragg-like peaks at a/q with intensity (μ(q)ψ/φ(q))², only for squarefree q "
          "(cf. Torquato, Zhang & de Courcy-Ireland 2018, cited for the idea, not checked here)"],
@@ -830,7 +864,7 @@ def sec_literal(res) -> str:
     hhalf_c = hband(res, "cramer", (20, 10), "full", 0.5)
     med = m5["mediant"][21]
     pref = [b["diam_half"] for b in m5["bulbs"]]
-    oc = [o["frac"] for o in res["a1"]["octaves"] if 2 <= o["j"] <= 6]
+    oc = [o["frac"] for o in res["a1"]["octaves"] if 3 <= o["j"] <= 6]
     a2 = res["a2"]
     ratio = [b / c for b, c in zip(a2["sieve_bound"], a2["cells"])]
     r150 = m3[(150, 20)]
@@ -871,7 +905,7 @@ def sec_literal(res) -> str:
         ["simple rules → hierarchy; Arnold tongues; mode locking", "ANALOGY", "no iteration, parameter or coupling in S; the shared root is Diophantine approximation"],
         ["ternary success = truncating the wild tail", "LITERAL",
          f"sup_m|S|² = max(ψ/φ_min(Q), ψ/(π(c+½)))² within a factor {rng(sp)} (the sea adds a few per cent in amplitude)"],
-        ["binary wall = sea energy; equal energy per octave", "LITERAL", f"{rng(oc, 3)} of ΣΛ² per octave for q ∈ [4, 128)"],
+        ["binary wall = sea energy; equal energy per octave", "LITERAL", f"{rng(oc, 3)} of ΣΛ² per octave for q ∈ [8, 128)"],
         ["large values are extremal", "LITERAL (rigorous anchor)", f"within a factor {rng(ratio[1:], 0)} of the dual large sieve for σ ≥ 0.65"],
         ["the Mandelbrot set's fractality", "DISCLAIMER", "boundary dimension 2, Misiurewicz points, small copies; none lies in the bulbs used here, none has a counterpart in S"],
     ]
@@ -886,6 +920,8 @@ def synthesis(res) -> str:
     kap = [m3[pr]["primes"]["kappa"] for pr in small]
     top1 = [m3[pr]["primes"]["concentration"][2] for pr in small]
     top1c = [m3[pr]["cramer"]["concentration"][2] for pr in small]
+    z150 = {b["band"]: b for b in band_stats(res, (150, 20))}[(10, 100)]["z"]
+    z20 = {b["band"]: b for b in band_stats(res, (20, 10))}[(10, 100)]["z"]
     a2 = res["a2"]
     ratio = [b / c for b, c in zip(a2["sieve_bound"], a2["cells"])]
     b150 = band_stats(res, (150, 20))
@@ -906,8 +942,8 @@ spikes q ≤ 1000 and a Gaussian sea of matched power reproduces all of them to 
 structure beyond it is detected.
 
 Where the minor arcs sit depends on (Q, c). At Q ≤ 20 they still carry the near-rational tail over one to two decades
-(Hill index {rng(hills)}, κ = {min(kap):.0f}–{max(kap):.0f}, the top 1% of cells holding {100 * min(top1):.0f}–{100 * max(top1):.0f}%
-of the energy against {100 * min(top1c):.0f}–{100 * max(top1c):.0f}% for Cramér). That is wild in the untruncated idealisation.
+(Hill index {rng(hills)}, κ = {min(kap):.0f}–{max(kap):.0f}, the top 1% of cells holding {pct_range(top1)} of the energy
+against {pct_range(top1c)} for Cramér). That is wild in the untruncated idealisation.
 For Q ≳ 50 the arcs cut the tail off within a decade of the bulk. What remains is neither wild nor exponential:
 deterministic residual spikes on a sea (κ = {m3[(150, 20)]['primes']['kappa']:.2f} at (150,20) against
 {m3[(150, 20)]['cramer']['kappa']:.2f} for Cramér). The ternary bound needs exactly this truncation. Its sup is the largest
@@ -918,8 +954,9 @@ primes in progressions, V(q) ≈ X(log q − γ − log 2π − Σ_(p|q) log p/(
 admissible arc range √(N/2c) both grow like √N, for different reasons.
 
 The minor-arc walk is smooth below 1/N, as any degree-N sum is. Beyond that it is diffusive in its second moment, with
-H₂ ≈ {rng(hb, 2)}: slightly but significantly above the Cramér ensemble, because of residual spikes. Its heavy tails show in
-H_½ ≈ {hhalf:.2f} at (20,10) (a Noah effect). There is no evidence of long memory.
+H₂ ≈ {rng(hb, 2)} at (150,20): slightly but significantly above the Cramér ensemble at Nℓ ∈ [10, 100) (z = {z150:.1f} at
+(150,20), {z20:.1f} at (20,10)), because of residual spikes, and marginal or indistinguishable beyond. Its heavy tails show
+in H_½ ≈ {hhalf:.2f} at (20,10) (a Noah effect). There is no evidence of long memory.
 
 The Mandelbrot set's bulbs share with the Farey forest the index set, the circle order and a q^(−2) size law, through
 Diophantine approximation, not dynamics. The mediant rule holds for the bulbs ({med['bulb_mediant']}/{med['pairs']}) but not
@@ -937,7 +974,7 @@ Three statements made while planning this phase do not survive measurement:
 
 - "The self-similarity cutoff is q* ≈ 270 and coincides with Q_max = 223." The cutoff, measured and predicted from the
   variance of primes in progressions, is q* = {q1['q_star']} (prediction {q1['q_star_fg']:.0f}). The figure 270 came from
-  √(X/log X), which is about 1.9× too low at every X. Q_max(c) = √(X/2c) comes from a different mechanism and depends on
+  √(X/log X), which is {rng([d['q_star_fg'] / d['sqrt_X_logX'] for d in res['m1_qstar']], 1)}× too low at every X. Q_max(c) = √(X/2c) comes from a different mechanism and depends on
   c; the agreement at c = 10 was a coincidence, not three routes to one scale.
 - "The spikes are self-similar." They form a data collapse: heights scale by μ(q)/φ(q), widths stay 1/N. The literal
   self-affinity is statistical (the window maxima).
@@ -985,8 +1022,8 @@ Hill index and kurtosis by (Q,c)).
 
 **Fig M4.** The minor-arc phasor walk is smooth below the band limit 1/N and crosses over to diffusive growth, as any
 degree-N sum does (Cramér too). For the primes the crossover follows the triangular envelope of the binary counts
-carried by the residual spikes (a, b), keeping H₂ slightly above ½ and above the Cramér band; the surrogate reproduces
-this. Heavy tails (Noah effect) show in H_½, and the phase-randomised walk keeps them (c). No long memory. The exact
+carried by the residual spikes (a, b), keeping H₂ slightly above ½ and above the Cramér band out to Nℓ ≈ 100; the
+surrogate reproduces this. Heavy tails (Noah effect) show in H_½, and the phase-randomised walk keeps them (c). No long memory. The exact
 spectral identity shows which neighbouring targets N' = N + d set H at each lag (d).
 
 ![Fig M5](figures/fig_M5_mandelbrot.png)
