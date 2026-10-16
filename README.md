@@ -149,8 +149,8 @@ checked against a surrogate made of the singular-series spikes q ≤ 1000 plus a
 * **M1.** The spikes are a data collapse (heights scaled by μ(q)/φ(q), widths fixed at 1/N), not self-similar. The
   collapse holds for φ(q) ≲ 300 and fades out where spike and sea are equal, at q* = 521 (513 predicted, with no fit,
   from the variance of primes in progressions); q* is not the arc range √(N/2c).
-* **M3.** Minor arcs at Q ≤ 20 carry a tail of index ≈ 1 in |S|² over one to two decades, wild only in the untruncated
-  idealisation; at Q ≳ 50 they are neither wild nor exponential (residual spikes on a sea).
+* **M3.** Minor arcs at Q ≤ 20 carry a tail near index 1 in |S|² (Hill 1.06–1.32 at k = 1000) over 1.2–2.3 decades,
+  wild only in the untruncated idealisation; at Q ≳ 50 they are neither wild nor exponential (residual spikes on a sea).
 * **M4.** The minor-arc walk is smooth below 1/N (generic), then diffusive, with H₂ ≈ 0.52–0.53 at (150,20) and
   0.50–0.52 at (20,10) for Nℓ ∈ [10, 1000); heavy tails (Noah) show in H_½ ≈ 0.78 at (20,10); no long memory detected.
 * **M5.** The Mandelbrot set's bulbs share the Farey index set, circle order and a q^(−2) size law with the spikes

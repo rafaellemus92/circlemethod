@@ -81,12 +81,13 @@ def fig_M1(res, out):
     ax.plot(Xs, [q["sqrt_X_logX"] for q in qsx], color=MUTED, lw=0.9, ls=(0, (4, 2)), label="√(X/log X): order of magnitude only")
     ax.plot(Xs, [q["psi_over_sea"] for q in qsx], color=INK2, lw=0.9, ls=(0, (4, 2)), label="ψ/√ΣΛ²: order of magnitude only")
     for c, col in ((1, AQUA), (10, ORANGE), (20, VIOLET)):
-        ax.plot(Xs, [q["Qmax"][c] for q in qsx], color=col, lw=0.9, ls=(0, (1, 1.5)), label=f"Q_max = √(X/2c), c = {c}: arc spacing, different mechanism")
+        ax.plot(Xs, [q["Qmax"][c] for q in qsx], color=col, lw=0.9, ls=(0, (1, 1.5)),
+                label=rf"$Q_{{\max}} = \sqrt{{X/2c}}$, c = {c}: arc spacing, different mechanism")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("X")
     ax.set_ylabel("denominator q")
-    ax.set_title("(c) where the collapse ends, from X = 10⁴ to 2·10⁶")
+    ax.set_title("(c) where the spike fades into the sea (q*), from X = 10⁴ to 2·10⁶")
     ax.legend(loc="upper left", fontsize=7)
     ax = axes[1, 1]
     wm = res["m1_winmax"]
@@ -95,7 +96,7 @@ def fig_M1(res, out):
         ax.plot(NL, wm[tag], marker="o", ms=3.5, lw=1.1, label=MEAS_LABEL[tag], **MEAS_STYLE[tag])
     sea = math.sqrt(res["L2"] - res["hybrid_sumsq"][1000]) / psi
     ax.axhline(sea, color=MUTED, lw=0.8)
-    ax.text(3000, sea * 0.8, "sea rms √(ΣΛ² − Σw*²)/ψ (surrogate)", fontsize=7, color=INK2, va="top")
+    ax.text(3000, sea * 1.08, "sea rms √(ΣΛ² − Σw*²)/ψ (surrogate)", fontsize=7, color=INK2, va="bottom")
     ax.axvspan(120, 16000, color=GRID, alpha=0.6, zorder=0)
     x0, y0 = 300.0, 0.01
     ax.plot([x0, x0 * 10, x0 * 10, x0], [y0, y0, y0 * math.sqrt(10), y0], color=INK2, lw=0.8)
@@ -178,7 +179,7 @@ def fig_M2(res, out):
     sg = m2["s_grid"]
     for tag in ("primes", "hybrid", "cramer"):
         ax.plot(sg, [m2["Ds_s"][tag][s] for s in sg], marker="o", ms=3.5, lw=1.1, label=MEAS_LABEL[tag], **MEAS_STYLE[tag])
-    ax.plot([0.5, 1, 1, 3], [1, 1, 0, 0], color=INK2, lw=0.8, ls=(0, (4, 2)), label="N → ∞ limit (ε = N^(−θ)): not reached")
+    ax.plot([0.5, 1, 1, 3], [1, 1, 0, 0], color=INK2, lw=0.8, ls=(0, (4, 2)), label=r"N → ∞ limit ($\varepsilon = N^{-\theta}$): not reached")
     ax.set_xlabel("moment order s")
     ax.set_ylabel(r"$D_s$ between Nε = 15 and 31")
     ax.set_title("(d) a broad crossover in s, not a step")
@@ -235,7 +236,7 @@ def fig_M3(res, out):
                 label="spike sum, semi-analytic (no fit)")
         sa = ts <= tmax
         ax.plot(ts[sa], r["asymptote"][sa], color=INK2, lw=0.8, ls=(0, (4, 2)), label="asymptote ψ²/(2N|m|·t·mean)")
-        ax.plot(ts, np.exp(-ts), color=INK2, lw=0.7, ls=(0, (5, 1.5, 1, 1.5)), label="e^(−t) (exponential)")
+        ax.plot(ts, np.exp(-ts), color=INK2, lw=0.7, ls=(0, (5, 1.5, 1, 1.5)), label=r"$e^{-t}$ (exponential)")
         ax.axvline(tmax, color=PAIR_COL[pr], lw=0.9)
         sp = r["sup_pred"]
         act = f"q = {sp['q']} (φ = {sp['phi']})" if sp["spike"] >= sp["sidelobe"] else "arc-edge sidelobe of q = 1, 2"
@@ -251,7 +252,7 @@ def fig_M3(res, out):
         ax.set_ylabel("P(> t)")
         ax.set_title(f"({'abcde'[pairs.index(pr)]}) (Q, c) = {pr}" + ("  (shaded: Pareto range)" if hi >= 10 * lo else ""))
         if pr == (5, 5):
-            ax.legend(loc="lower left", fontsize=6.8)
+            ax.legend(loc="lower left", bbox_to_anchor=(0.1, 0.0), fontsize=6.8, framealpha=1)
     ax = axes[1, 2]
     tp = res.get("m3_pairs_order") or [(5, 5), (10, 10), (20, 10), (50, 10), (100, 20), (150, 20), (223, 10)]
     x = np.arange(len(tp))
@@ -276,13 +277,14 @@ def fig_M3(res, out):
     km = [m3[p]["E4_model"] / (m3[p]["primes"]["P_m"] ** 2 / m3[p]["meas_m"]) for p in tp]
     ax2.plot(x, km, "s", mfc="none", mec=VIOLET, ms=9, ls="none", label="κ from the fourth-moment model")
     ax2.set_yscale("log")
-    ax2.set_ylim(1, 1e4)
+    ax2.set_ylim(0.7, 1e4)
     ax2.set_ylabel("minor-arc kurtosis κ (log)")
     ax2.grid(False)
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, loc="upper center", fontsize=6.8, ncol=2)
-    ax.set_title("(f) index ≈ 1 in |S|² at Q ≤ 20 (wild only untruncated); neither wild nor exponential at Q ≳ 50")
+    h20 = [m3[p]["primes"]["hill"][1000] for p in tp[:3]]
+    ax.set_title(f"(f) Hill index of |S|² {min(h20):.2f}–{max(h20):.2f} at Q ≤ 20 (→ 1 untruncated); neither wild nor exponential at Q ≳ 50")
     _suptitle(fig, "Fig M3. Mild versus wild on the minor arcs, by (Q, c): the tail of |S|² is the Farey count again, truncated by the arcs")
     fig.tight_layout()
     _save(fig, out, "fig_M3_tails.png")
@@ -364,13 +366,13 @@ def fig_M4(res, out):
             ax.plot(ctr, res["spectral"][(tag, 150, 20)]["P_binned"], lw=1.0, label=MEAS_LABEL["hybrid" if tag.startswith("hybrid") else "cramer"], **st)
     for xx in (1, 100, 3906):
         L = xx * M / X
-        ax.axvline(M / L, color=MUTED, lw=0.7)
+        ax.axvline(M / L, ymin=0.42, color=MUTED, lw=0.7)
         ax.text(M / L * 1.15, max(sp["P_binned"]) * 4, f"M/ℓ at\nNℓ/M = {xx}", fontsize=6.6, color=INK2, va="center")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("|d| = |N′ − N| (neighbouring targets)")
     ax.set_ylabel(r"binned $|I_m(N+d)|^2$")
-    ax.set_title("(d) H is a Fejér average of the minor-arc counts at nearby targets, (150, 20)")
+    ax.set_title("(d) cyclic walk: H is a Fejér average of the minor-arc counts at nearby targets, (150, 20)")
     ax.set_ylim(top=max(sp["P_binned"]) * 12)
     ax.legend(loc="lower left", fontsize=7)
     ins = ax.inset_axes([0.44, 0.1, 0.3, 0.27])
@@ -424,7 +426,7 @@ def fig_M5(res, out):
     ax.set_xlabel("θ = p/q")
     ax.set_ylabel("measured size ÷ leading-order estimate")
     pf = [b["diam_half"] for b in bl]
-    ax.set_title(f"(b) Mandelbrot's empirical N² rule: prefactor {min(pf):.2f}–{max(pf):.2f} (q ≤ 40), depending on p/q")
+    ax.set_title(f"(b) N² rule (empirical; proved for 1/q bulbs): prefactor {min(pf):.2f}–{max(pf):.2f} (q ≤ 40), depending on p/q")
     ax.legend(loc="upper left", fontsize=7.5)
     ax = axes[1, 0]
     sz = m5["sizes"]
@@ -528,6 +530,7 @@ def fig_M6(res, out):
     ins.plot(0.5 * (sig[1:] + sig[:-1]), slope, "o-", color=BLUE, ms=3)
     ins.axhline(2.0, color=INK2, lw=0.8)
     ins.set_title("local slope vs 2", fontsize=6.5, loc="left")
+    ins.set_xlabel("σ", fontsize=6)
     ins.tick_params(labelsize=6)
     ax = axes[2]
     un = res["uncertainty"]

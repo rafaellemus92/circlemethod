@@ -24,9 +24,10 @@ applied to spikes of height ψ/φ(q) and width 1/N at every reduced a/q with squ
 The constant is exactly ½. The Dirichlet series is Σ μ²(q)φ(q)^(1−s) = ζ(s−1)·Π_p(1 + (p−1)^(1−s))(1 − p^(1−s)), and
 every Euler factor equals 1 at s = 2. Read pointwise, the count is a power-law tail; read per box, a straight-line
 spectrum; read per coherence cell, a large-value exponent; read through the fourth moment, the minor-arc kurtosis; read
-per octave of q, equal energy per octave. These are one fact read five ways, not five confirmations. (Two scaling laws
-below are not this fact: the band-limit crossover of the walk in M4, which any degree-N sum shows, and the √L growth of
-a sharp window's spread in A3.)
+per octave of q, equal energy per octave. These are one fact read five ways, not five confirmations (the L^(1/2) growth
+of the window maxima in M1(d) is a sixth reading, per window). Three scaling laws below are not this fact: the
+band-limit crossover of the walk in M4, which any degree-N sum shows; the √L growth of a sharp window's spread in A3; and
+the X-scaling of q* in M1(c), which comes from the variance of primes in progressions.
 
 Normalisations used throughout: ψ(X) = 999,586.6, ΣΛ² = 1.28030e7. The trivial atoms at α = 0 and
 α = 1/2 (within |Nα| ≤ 20) hold a share 0.1553 of Σ|S|² and are removed before any measure is formed. The
@@ -37,9 +38,9 @@ mass 1/(Lφ(q)²) of the normalised measure.
 
 | block | question | key numbers at X = 10^6 | reading |
 |:---|:---|:---|:---|
-| M1 spike collapse | does every spike look like the spike at 0, scaled? | q* = 521 measured, 513 from the variance of primes in progressions (no fit) | a data collapse (heights scaled by μ(q)/φ(q), widths fixed at 1/N) for φ(q) ≲ 300, degrading until spike and sea are equal at φ(q*) ≈ 512; not self-similarity |
+| M1 spike collapse | does every spike look like the spike at 0, scaled? | q* = 521 measured, 513 from the variance of primes in progressions (no fit) | a data collapse (heights scaled by μ(q)/φ(q), widths fixed at 1/N) for φ(q) ≲ 300 (mean within 8%, sd ≤ 0.33), degrading steadily until spike and sea are equal at φ(q*) ≈ 512; not self-similarity |
 | M2 spectral measure | how unevenly is \|S\|²dα spread? | 2L·i·m₍ᵢ₎ (1 = the Farey count): median 0.99 over ranks 8–1024, a sawtooth 0.70–1.43 from the φ-degeneracy that the no-fit Farey staircase reproduces; D₂ = 0.05 vs Cramér 0.92 at Nε ≈ 11 | coarse-grained straight-line spectrum f(α) = α, offset −ln(2L)/ln(1/ε); Diophantine, not a cascade |
-| M3 minor-arc tails | is the minor-arc \|S\|² wild or mild? | Hill index of \|S\|² (k = 1000) 1.06 at (5,5), 1.32 at (20,10), 3.16 at (150,20) | a tail of index ≈ 1 in \|S\|² over one to two decades at Q ≤ 20 (wild only in the untruncated idealisation); neither wild nor exponential at Q ≳ 50 |
+| M3 minor-arc tails | is the minor-arc \|S\|² wild or mild? | Hill index of \|S\|² (k = 1000) 1.06 at (5,5), 1.32 at (20,10), 3.16 at (150,20) | a tail near index 1 in \|S\|² over 1.2–2.3 decades at Q ≤ 20 (index 1 only in the untruncated idealisation, where it is wild); neither wild nor exponential at Q ≳ 50 |
 | M4 minor-arc walk | how rough is the E0 walk? long memory? | H₂ = 0.531 vs Cramér 0.506 ± 0.003 at Nℓ ∈ [10,100) (z = 8.2); H_½ = 0.78 vs 0.52 at (20,10) | smooth below 1/N (generic); H₂ slightly above ½ from residual spikes; Noah effect yes; no long memory |
 | M5 Mandelbrot bulbs | do bulbs and spikes share a hierarchy? | 245/245 bulbs checked; prefactor 0.98–1.14; mediant rule 140/140 (bulbs) vs 56/140 (spikes) | same index set and circle order, q⁻² sizes through Diophantine approximation; not shared dynamics |
 | A1 octaves of q | how is the energy spread over denominators? | 0.038–0.044 of ΣΛ² per octave for q ∈ [8, 128) | equal energy per octave: the L² wall in fractal language |
@@ -131,7 +132,7 @@ Median of V/(X·FG) over the 1167 primes in [300, 10^4]: 1.002. The phase-lockin
 ⟨cos θ⟩ (last number in each triple) falls together with the height collapse: a locked spike is *real* (μ(q)ψ/φ(q),
 because the Ramanujan sums c_q(n) are integers), and an unlocked one has a uniformly spread phase.
 
-**(c) Where the collapse ends.** q*(X) is the prime q where spike and sea are equal, (q − 1)√(X·FG(q)) = ψ (brentq;
+**(c) Where the spike fades into the sea.** q*(X) is the prime q where spike and sea are equal, (q − 1)√(X·FG(q)) = ψ (brentq;
 no fit). Measured q* is the first prime where the running median over 21 consecutive primes of
 K(q) = √(mean_a |S(a/q) + ψ_c/(q−1)|²)·(q−1)/ψ exceeds 1:
 
@@ -171,8 +172,10 @@ Farey count read per window: a window of width L (as a fraction of the circle) h
 statistical self-affine scaling of one statistic between the sea floor and the q ≤ 5 spikes, not a test of self-affinity
 of the whole graph.
 
-**Shows.** The major-arc spike picture holds quantitatively up to a computable cutoff q*(X), set by the variance of
-primes in progressions. Phase locking (⟨cos θ⟩ → 1) and the height collapse fail together. **Does not show.** Any
+**Shows.** The major-arc spike picture holds as a data collapse for φ(q) ≲ 300 (binned medians: mean 1.08, sd 0.33 at
+φ ≈ 250–320) and then degrades steadily (mean 1.23, sd 0.51 at φ ≈ 400–520). Its mean, spread and phase locking are
+predicted throughout by the variance of primes in progressions, until spike and sea are equal at the computable q*(X).
+Phase locking (⟨cos θ⟩ → 1) and the height collapse fail together. **Does not show.** Any
 self-similarity under zoom; any link between q* and an admissible arc range; anything asymptotic (FG is a conjectural
 asymptotic, checked at these X only).
 
@@ -337,15 +340,15 @@ points (≈ 1/N) lying entirely in the minor arcs: the Hill index of the cell ma
 the largest cells. The fourth-moment model ∫_m|S|⁴ ≈ (ψ⁴/N)[(2/3)Σ_{q>Q}μ²/φ³ + T4(c)Σ_{q≤Q}μ²/φ³], T4(c) = 2∫_c^∞ sinc⁴,
 predicts the kurtosis κ = mean_m|S|⁴/(mean_m|S|²)².
 
-| (Q,c) | κ | κ model / measured | sup²/mean | predicted sup² / measured | active term | Pareto range | Hill k = 300 / 1000 / 10⁴ | Hill Cramér (k = 1000) | κ Cramér |
+| (Q,c) | κ | κ model / measured | sup²/mean | predicted sup² / measured | active term | Pareto range | Hill k = 300 / 1000 / 3000 / 10⁴ | Hill Cramér (k = 1000) | κ Cramér |
 |---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|
-| (5,5) | 1045 | 0.999 | 24581.8 | 1.005 | q = 6 (φ = 2) | [5, 983] | 1.13 / 1.06 / 1.05 | 5.85 | 2.157 |
-| (10,10) | 120.2 | 0.992 | 3017.0 | 1.002 | q = 14 (φ = 6) | [5, 121] | 1.29 / 1.08 / 1.08 | 6.91 | 2.016 |
-| (20,10) | 59.76 | 0.982 | 1820.1 | 0.997 | q = 30 (φ = 8) | [5, 73] | 1.47 / 1.32 / 1.14 | 6.93 | 2.016 |
-| (50,10) | 10.54 | 0.878 | 347.9 | 0.935 | q = 66 (φ = 20) | none | 2.47 / 1.98 / 1.36 | 6.95 | 2.017 |
-| (100,20) | 4.927 | 0.716 | 142.3 | 0.951 | q = 102 (φ = 32) | none | 3.03 / 2.31 / 1.77 | 8.60 | 2.002 |
-| (150,20) | 3.312 | 0.574 | 71.8 | 0.868 | q = 210 (φ = 48) | none | 4.48 / 3.16 / 2.04 | 8.49 | 2.001 |
-| (223,10) | 2.642 | 0.420 | 156.4 | 0.889 | arc-edge sidelobe of q = 1, 2 | none | 3.81 / 3.44 / 2.59 | 6.66 | 2.025 |
+| (5,5) | 1045 | 0.999 | 24581.8 | 1.005 | q = 6 (φ = 2) | [5, 983] | 1.13 / 1.06 / 1.04 / 1.05 | 5.85 | 2.157 |
+| (10,10) | 120.2 | 0.992 | 3017.0 | 1.002 | q = 14 (φ = 6) | [5, 121] | 1.29 / 1.08 / 1.08 / 1.08 | 6.91 | 2.016 |
+| (20,10) | 59.76 | 0.982 | 1820.1 | 0.997 | q = 30 (φ = 8) | [5, 73] | 1.47 / 1.32 / 1.21 / 1.14 | 6.93 | 2.016 |
+| (50,10) | 10.54 | 0.878 | 347.9 | 0.935 | q = 66 (φ = 20) | none | 2.47 / 1.98 / 1.65 / 1.36 | 6.95 | 2.017 |
+| (100,20) | 4.927 | 0.716 | 142.3 | 0.951 | q = 102 (φ = 32) | none | 3.03 / 2.31 / 1.98 / 1.77 | 8.60 | 2.002 |
+| (150,20) | 3.312 | 0.574 | 71.8 | 0.868 | q = 210 (φ = 48) | none | 4.48 / 3.16 / 2.37 / 2.04 | 8.49 | 2.001 |
+| (223,10) | 2.642 | 0.420 | 156.4 | 0.889 | arc-edge sidelobe of q = 1, 2 | none | 3.81 / 3.44 / 2.93 / 2.59 | 6.66 | 2.025 |
 
 The fourth-moment model counts spikes only. It holds to 0.982–0.999 at Q ≤ 20; from Q ≈ 50 on the sea adds to ∫_m|S|⁴ and
 the model falls short (0.88 at (50,10), 0.72 at (100,20), 0.57 at (150,20), 0.42 at (223,10)). The Pareto range is [5, 0.04·sup²/mean]; a power law is claimed only where it spans a
@@ -394,14 +397,15 @@ At (150,20) the surrogate against the primes:
 At (150,20) P(> 8) = 0.00565 against 0.000335 for an exponential law
 (17×).
 
-**Reading.** At Q ≤ 20 the minor arcs still carry the near-rational tail over one to two decades. The measured Hill
+**Reading.** At Q ≤ 20 the minor arcs still carry the near-rational tail over 1.2–2.3 decades (the
+Pareto ranges above). The measured Hill
 index of |S|² is 1.04–1.47, i.e. 2.1–2.9 in |S|: the arc truncation steepens the measured tail above the idealised index 1 in
 |S|² (2 in |S|). That idealised tail sits exactly on Mandelbrot's wild/pre-wild boundary for |S| (state 6 needs Pareto
 index ≤ 2), so the minor arcs at Q ≤ 20 are wild only **in the untruncated idealisation**; the measured, truncated
 tail is pre-wild in |S|. At finite N every moment is finite in any case; the tail is never "extreme" (state 7 needs every
 moment infinite). For Q ≳ 50 the arcs cut the tail off within a decade of the bulk. What remains is **neither wild nor
-exponential**: deterministic residual spikes on a sea, reproduced by the singular-series surrogate to within
-13–21% in P(> t) at (150,20). Cramér is exponential in |S|² in the bulk (borderline mild); beyond t ≈ 10 the
+exponential**: deterministic residual spikes on a sea, which the singular-series surrogate reproduces only roughly: its
+P(> t) over t ∈ [4, 32] is 4–14% high at (50,10), 13–21% high at (150,20) and 17–56% high at (223,10). Cramér is exponential in |S|² in the bulk (borderline mild); beyond t ≈ 10 the
 arc-edge sidelobes of its single q = 1 spike add a power-law piece of ≈ 10⁻⁵ (max/mean 307 at (5,5)). The fourth-moment model, the Pareto tail and κ are the same fact. The
 ternary bound's sup is an order statistic of the truncated tail. **Does not show.** That any tail is wild at finite N;
 probability over primes (the randomness here is uniform α); anything beyond the surrogate.
@@ -479,12 +483,14 @@ for 16/16 seeds at (150,20) and 4/16 seeds at (20,10): at (20,10) a handful of t
 moves it by up to 0.05, and the check is only as good as that. H_½ well above ½ for the primes and for the phase-randomised walk, but not for Cramér,
 is the Noah effect (heavy tails), at (20,10) above all.
 
-The Joseph-only walk has H_½ ≈ H₁ ≈ 0.51 (no heavy tails) but keeps the small H₂ excess: 0.524 against
-0.501 for Cramér's Joseph-only walk at (150,20), 0.523 against 0.500 at
-(20,10). At Nℓ ∈ [3000, 50000) it carries the large-lag rise: 0.647 at (150,20) (full walk
-0.657, Noah-only 0.531) and 0.572 at (20,10) (Noah-only
-0.501). Whatever structure there is at large lags lives in the phases, i.e. in the deterministic residual
-spikes.
+The Joseph-only walk (w/|w|) has H_½ ≈ H₁ ≈ 0.51 (no heavy tails). Its H₂ over
+Nℓ ∈ [4, 1000] is 0.524 against 0.501 for Cramér's Joseph-only walk at (150,20), where the
+full walk has 0.529; at (20,10) it is 0.523 against
+0.500, while the full walk is 0.509 against
+0.505. At Nℓ ∈ [3000, 50000) it gives 0.647 at (150,20) (full walk
+0.657, Noah-only 0.531) but also 0.572 at (20,10), where the full walk shows
+no rise (0.527). Flattening the amplitudes re-weights the walk, so w/|w| is not a clean split into tails
+and memory: it can create an excess the full walk does not have. It does not support a memory reading either way.
 
 **No long memory.** The primes' H₂ exceeds the Cramér ensemble decisively only at Nℓ < 100, where the residual spikes
 set it (the triangular envelope at (20,10)). Beyond that the verdicts are "marginal" or "none" at (150,20) and "none" or
@@ -514,8 +520,9 @@ arg w in 64 bins, maximum 6 bits):
 On the minor arcs the phases are spread almost uniformly (entropy ≈ 6 bits), and r is |I_m|/P_m. Magnitude-only
 bounds assume r = 1 there.
 
-**Shows.** H is a second-order statistic of the minor-arc counts I_m(N'). The band limit is generic, its detailed shape
-is set by the residual spikes, and the tails are heavy at small Q. **Does not show.** Long memory. That α is time: it is
+**Shows.** The cyclic walk's H is a second-order statistic of the minor-arc counts I_m(N'), and the tabulated walk
+follows it at small lags. The band limit is generic, its detailed shape is set by the residual spikes, and the tails are
+heavy at small Q. **Does not show.** Long memory. That α is time: it is
 not, and "walk" refers to the ordering of grid points. Anything beyond "marginal" or "none" at lags with fewer than ~500
 independent increments.
 
@@ -523,12 +530,12 @@ independent increments.
 
 The bulb attached to the main cardioid at internal angle θ = p/q has its root at c_r = e^(2πiθ)/2 − e^(4πiθ)/4 and a
 centre with f_c^q(0) = 0 of exact period q (Douady–Hubbard). Its leading-order radius is s = sin(πθ)/q². The q⁻²
-shrinking is Mandelbrot's "N² rule", observed numerically (1985) and proved by Guckenheimer and McGehee from the normal
-forms of the resonant bifurcations (Mittag-Leffler Report 15, 1984, "A proof of the Mandelbrot N² conjecture"). The form
-sin(πp/q)/q² is a leading-order estimate, not exact. For limbs (a bulb plus everything attached to it) the
+shrinking is Mandelbrot's empirical "N² rule" (observed numerically; paper III, 1985). Guckenheimer and McGehee proved
+it for the 1/q bulbs from the normal forms of the resonant bifurcations with multiplier e^(2πi/q) (Mittag-Leffler Report
+15, 1984, "A proof of the Mandelbrot N² conjecture"). The form sin(πp/q)/q² is a leading-order estimate, not exact. For limbs (a bulb plus everything attached to it) the
 Pommerenke–Levin–Yoccoz inequality gives O(1/q) in general; Milnor's O(1/q²) conjecture is proved for the 1/q-limbs, where
 it is optimal (Kapiamba, arXiv:2103.03211), and is open for general p/q.
-Every bulb with q ≤ 40 was located by Newton's method seeded along the outward normal at 0.9·s and checked for exact
+Every bulb with q ≤ 40 and p/q ≤ 1/2 (the bulb at 1 − p/q is its complex conjugate) was located by Newton's method seeded along the outward normal at 0.9·s and checked for exact
 period q, rotation number p/q and continuation to the root (certificate: 245/245). The
 primary size is diam/2 = |c(ρ = −1) − c_r|/2, from continuation of the q-cycle multiplier ρ to −1.
 
@@ -545,7 +552,7 @@ primary size is diam/2 = |c(ρ = −1) − c_r|/2, from continuation of the q-cy
 
 By band of q:
 
-| q band | # bulbs | diam/2 / s, mean (range) | \|centre − root\| / s, mean (range) |
+| q band | # bulbs (p/q ≤ 1/2) | diam/2 / s, mean (range) | \|centre − root\| / s, mean (range) |
 |:---|---:|---:|---:|
 | [2, 5] | 5 | 0.999 (0.981–1.018) | 1.001 (0.991–1.010) |
 | [6, 10] | 11 | 1.041 (1.012–1.074) | 1.023 (1.010–1.036) |
@@ -574,17 +581,18 @@ mediant? is the tallest spike (max |μ(b)|/φ(b), ties to the smaller denominato
 | F_13 | 58 | 58/58 | 26/58 | 18/58 |
 | F_21 | 140 | 140/140 | 56/140 | 46/140 |
 
-Examples of spike failures: 0/1 | 1/21: mediant 1/22, tallest spike 1/30; 1/21 | 1/20: mediant 2/41, tallest spike 3/62. **Log-divergence parallel** (the slope 12/π³ is derived: sin averages 2/π over a period
-and Σ_(q≤Q) φ(q)/q² ~ (6/π²) ln Q; the constant −0.009 is read off numerically, not derived):
+Examples of spike failures: 0/1 | 1/21: mediant 1/22, tallest spike 1/30; 1/21 | 1/20: mediant 2/41, tallest spike 3/62. **Log-divergence parallel.** Both sums grow like a constant times ln Q, so each decade of
+Q adds a fixed amount: (12/π³) ln 10 = 0.89114 for the bulbs (sin averages 2/π over a period and
+Σ_(q≤Q) φ(q)/q² ~ (6/π²) ln Q) and ln 10 = 2.30259 for the spikes:
 
-| Q | Σ sin(πp/q)/q² (bulbs) | (12/π³) ln Q − 0.009 (constant fitted by eye) | Σ μ²/φ (spikes) | ln Q + 1.3326 |
-|---:|---:|---:|---:|---:|
-| 40 | 1.41876 | 1.41866 | 5.04506 | 5.02148 |
-| 400 | 2.30957 | 2.30981 | 7.31678 | 7.32406 |
-| 4000 | 3.20056 | 3.20095 | 9.62663 | 9.62665 |
+| Q | Σ sin(πp/q)/q² (bulbs) | increase per decade of Q | Σ μ²/φ (spikes) | increase per decade of Q |
+|---:|---:|:---|---:|:---|
+| 40 | 1.41876 | — | 5.04506 | — |
+| 400 | 2.30957 | 0.89081 | 7.31678 | 2.27172 |
+| 4000 | 3.20056 | 0.89098 | 9.62663 | 2.30985 |
 
 **Reading.** The bulbs and the spikes are indexed by the same reduced fractions in the same circle order, and both
-families have q^(−2) sizes: for bulbs the empirical N² rule, for spikes the **mass** 1/(Lφ(q)²) (the height scales as
+families have q^(−2) sizes: for bulbs the N² rule (empirical; proved for the 1/q bulbs), for spikes the **mass** 1/(Lφ(q)²) (the height scales as
 1/φ(q)). Ford circles (radius 1/(2q²)) show the same order and size law with no dynamics at all. The mediant rule holds
 for the bulbs but fails for the spikes, because many mediants have non-squarefree denominators (no spike) and φ(q) is not
 monotone in q. What the two families share is Diophantine approximation, not dynamics. The Mandelbrot set's fractality
@@ -696,14 +704,14 @@ The physics vocabulary raised along the way, sorted by whether it applies litera
 | Noah effect | LITERAL (statistics in α; α is not time) | H_½ = 0.78 against 0.52 for Cramér at (20,10) |
 | Joseph effect | NOT DETECTED | H₂ = 0.531 / 0.524 at (150,20), above Cramér by z = 8.2 / 2.2 in Nℓ ∈ [10,100) / [100,1000), from the residual-spike spectrum (the surrogate reproduces it); the large-lag rise at (150,20) sits in the phases (Joseph-only walk), rests on ≤ 186 independent increments and is not reproduced consistently across R |
 | inner cutoff 1/N | LITERAL but GENERIC | band limit of any degree-N polynomial; "smooth", not "ballistic"; the primes' shape follows the triangular envelope |
-| spikes are self-similar | NO: a data collapse | heights scaled by μ/φ, widths fixed; holds for φ ≲ 300 (main lobe), degrades until spike = sea at φ(q*) ≈ 512; the median window maximum scales like L^(1/2) (one statistic, the Farey count per window) |
+| spikes are self-similar | NO: a data collapse | heights scaled by μ/φ, widths fixed; holds for φ ≲ 300 (main lobe; mean within 8%, sd ≤ 0.33), degrades until spike = sea at φ(q*) ≈ 512; the median window maximum scales like L^(1/2) (one statistic, the Farey count per window) |
 | multifractal for α < 1 | LITERAL only as a coarse-grained spectrum, ε tied to N | straight line f = α, offset −ln(2L)/ln(1/ε), L = 10.82; Diophantine, not a cascade |
 | the sea is monofractal | LITERAL for Cramér; approximate for the primes' minor arcs only at Q ≥ 150 | 899 boxes with α < 0.9 entirely in the minor arcs at (150,20), 3198 at (50,10) |
 | D_s steps at s = 1 | LIMIT ONLY (N → ∞, ε = N^(−θ)) | at 10^6 a broad crossover over 0.8 ≲ s ≲ 1.5; D_(s≥2) ≈ 0 is the four q = 3, 6 spikes |
 | outer cutoff coincides with the arc range | OVERCLAIM | q* ≈ 513 (height against sea) vs Q_max = 223 (c = 10; spacing against width); both ∝ √N up to logs and c |
 | bulbs and spikes share Farey combinatorics | PARTLY | same index set and circle order; the mediant rule holds for bulbs only (140/140 against 56/140) |
 | bulb size 1/q² matches spike height | WRONG PAIRING | height ∝ 1/φ(q); the q^(−2) objects are spike mass and Ford circles; bulbs depend on p (sin πθ), spikes do not |
-| the bulb size law is exact | NO | the q⁻² shrinking is proved (Guckenheimer–McGehee 1984); sin(πp/q)/q² is leading order, prefactor 0.98–1.14 here; for limbs O(1/q) in general, O(1/q²) proved for the 1/q-limbs (Kapiamba) |
+| the bulb size law is exact | NO | the q⁻² shrinking is proved for the 1/q bulbs (Guckenheimer–McGehee 1984); sin(πp/q)/q² is leading order, prefactor 0.98–1.14 here; for limbs O(1/q) in general, O(1/q²) proved for the 1/q-limbs (Kapiamba) |
 | simple rules → hierarchy; Arnold tongues; mode locking | ANALOGY | no iteration, parameter or coupling in S; the shared root is Diophantine approximation |
 | ternary success = truncating the wild tail | LITERAL | sup_m\|S\|² = max(ψ/φ_min(Q), ψ/(π(c+½)))² within a factor 0.87–1.01 (the sea adds a few per cent in amplitude) |
 | binary wall = sea energy; equal energy per octave | LITERAL | 0.038–0.044 of ΣΛ² per octave for q ∈ [8, 128) |
@@ -722,12 +730,12 @@ of q, it is equal energy per octave, which is why arcs up to Q capture only (ln 
 (L_N = NΣΛ²/ψ² = 12.81): the L² wall in fractal language. These are one fact, not independent confirmations. A
 surrogate built from the singular-series spikes q ≤ 1000 and a Gaussian sea of matched power reproduces the spectrum
 (D₂ within 0.003), the tail and κ at Q ≤ 20 (κ within 1.3%) and the walk
-exponents; where the sea matters it is coarser (P(> t) 13–21% high
-at (150,20), κ off by up to 9% at Q ≥ 100). The octave law (A1) and the
+exponents; where the sea matters it is coarser (P(> t) over t ∈ [4, 32] 13–21% high at (150,20) and
+17–56% high at (223,10); κ off by up to 9% at Q ≥ 100). The octave law (A1) and the
 large-value counts (A2) are compared with the spike models and the Farey count instead. Nothing beyond singular-series
 spikes plus a sea is detected.
 
-Where the minor arcs sit depends on (Q, c). At Q ≤ 20 they still carry the near-rational tail over one to two decades
+Where the minor arcs sit depends on (Q, c). At Q ≤ 20 they still carry the near-rational tail over 1.2–2.3 decades
 (Hill index of |S|² 1.04–1.47, κ = 60–1045, the top 1% of cells holding 25–36% of the
 energy against 5% for Cramér). That is wild only in the untruncated idealisation: the idealised tail has
 index 2 in |S|, on the wild/pre-wild boundary, and the truncated tail measured here is steeper.
@@ -756,14 +764,15 @@ Every exponent here is a statistic at one finite N over a finite scaling window.
 
 Three statements made while planning this phase do not survive measurement:
 
-- "The self-similarity cutoff is q* ≈ 270 and coincides with Q_max = 223." The cutoff, measured and predicted from the
-  variance of primes in progressions, is q* = 521 (prediction 513). The figure 270 came from
+- "The self-similarity cutoff is q* ≈ 270 and coincides with Q_max = 223." The spike = sea crossover, measured and
+  predicted from the variance of primes in progressions, is q* = 521 (prediction 513). The figure 270 came from
   √(X/log X), which is 1.9–2.3× too low at every X. Q_max(c) = √(X/2c) comes from a different mechanism and depends on
   c; the agreement at c = 10 was a coincidence, not three routes to one scale.
-- "The spikes are self-similar." They form a data collapse: heights scale by μ(q)/φ(q), widths stay 1/N. The literal
-  self-affinity is statistical (the window maxima).
-- "The minor arcs are a mild sea." That depends on (Q,c): at Q ≤ 20 they carry a wild (untruncated) tail; at Q ≥ 150
-  they are neither wild nor exponential.
+- "The spikes are self-similar." They form a data collapse: heights scale by μ(q)/φ(q), widths stay 1/N, and the
+  collapse holds for φ(q) ≲ 300. The window maxima show a statistical self-affine scaling of one statistic (the Farey
+  count per window), not self-affinity of the graph.
+- "The minor arcs are a mild sea." That depends on (Q,c): at Q ≤ 20 their tail is wild only in the untruncated
+  idealisation (the measured, truncated tail is pre-wild in |S|); at Q ≥ 150 they are neither wild nor exponential.
 
 ## Figures
 
@@ -790,11 +799,13 @@ within the first few hundred ranks (f).
 ![Fig M3](figures/fig_M3_tails.png)
 
 **Fig M3.** Under uniform α on the minor arcs the tail of |S|² is the Farey count again, P(> t) ≈ ψ²/(2N|m|·t·mean), a
-power law of index 1 in |S|² (2 in |S|). The semi-analytic spike sum (no fit) follows the measured tail wherever spikes
-dominate (Q ≤ 20, and t ≳ 16 at larger Q; below that the sea adds to it) and explains the steepening as truncation by
-the arcs. At Q ≤ 20 the tail spans one to two decades (wild only in the untruncated idealisation); for Q ≳ 50 the arcs
-cut it within a decade, leaving residual spikes on a sea that the surrogate reproduces to 10–20%. Cramér is exponential
-apart from the edge-sidelobe plateau of its q = 1 spike. The vertical line is the largest surviving value and the term that sets it (f:
+power law of index 1 in |S|² (2 in |S|). The semi-analytic spike sum (no fit) follows the measured tail to within 10%
+from t ≈ 7–10 at Q ≤ 50, where spikes dominate, and explains the steepening as truncation by the arcs; at Q ≥ 100 the
+sea keeps the data more than 10% above it over most of the range (within 10% only from t ≈ 54 at (150,20)). At Q ≤ 20 the tail
+spans 1.2–2.3 decades (wild only in the untruncated idealisation); for Q ≳ 50 the arcs cut it within a decade, leaving
+residual spikes on a sea that the surrogate reproduces only roughly (P(> t) over t ∈ [4, 32] 4–14% high at (50,10),
+13–21% high at (150,20) and 17–56% high at (223,10)). Cramér is exponential apart from the edge-sidelobe plateau of its
+q = 1 spike. The vertical line is the largest surviving value and the term that sets it (f:
 Hill index and kurtosis by (Q,c)).
 
 ![Fig M4](figures/fig_M4_walks.png)
@@ -803,14 +814,16 @@ Hill index and kurtosis by (Q,c)).
 degree-N sum does (Cramér too). At (20,10) the primes' crossover follows, with no fit, the triangular envelope of the
 binary counts carried by the residual spikes (b); at (150,20), where the mask removes 27% of the circle, it departs from
 the envelope by a few hundredths (a). At both pairs H₂ stays slightly above ½ and above the Cramér band out to
-Nℓ ≈ 60–120, and the surrogate reproduces this. Heavy tails (Noah effect) show in H_½, and the phase-randomised walk keeps them (c). No long memory. The exact
-spectral identity shows which neighbouring targets N' = N + d set H at each lag (d).
+Nℓ ≈ 60–120, and the surrogate reproduces this. Heavy tails (Noah effect) show in H_½, and the phase-randomised walk
+keeps them (c). No long memory is detected. For the zero-filled cyclic walk an exact spectral identity shows which
+neighbouring targets N' = N + d set H at each lag (d); the tabulated walk follows it for Nℓ/M ≤ 30 and departs from it at
+larger lags.
 
 ![Fig M5](figures/fig_M5_mandelbrot.png)
 
 **Fig M5.** The bulbs on the main cardioid and the spikes of S are indexed by the same reduced fractions in the same
-circle order, and both have q^(−2) sizes: Mandelbrot's empirical N² rule for bulbs (prefactor 0.98–1.14, depending on
-p/q), and the spike mass 1/(Lφ²), not the height, for spikes. Ford circles show the same order and size law with no
+circle order, and both have q^(−2) sizes: Mandelbrot's N² rule for bulbs (empirical; proved for the 1/q bulbs; measured
+prefactor 0.98–1.14, depending on p/q), and the spike mass 1/(Lφ²), not the height, for spikes. Ford circles show the same order and size law with no
 dynamics. The mediant rule holds for bulbs in 140 of 140 Farey-neighbour pairs of F_21 but for
 spikes in only 56; in 46 pairs the mediant has no spike at all.
 
@@ -841,11 +854,13 @@ and LMS Lecture Notes 274 (2000) 325–363; Tan Lei, Comm. Math. Phys. 134 (1990
 Solitons Fractals X 3 (2019) 100019; Devaney, Amer. Math. Monthly 106 (1999) 289–302; Ford, Amer. Math. Monthly 45 (1938)
 586–601; Jensen, Bak & Bohr, Phys. Rev. Lett. 50 (1983) 1637.
 
+Limb sizes: Kapiamba, "An optimal Yoccoz inequality for near-parabolic quadratic polynomials", arXiv:2103.03211 (O(1/q²)
+for the 1/q-limbs; Milnor's conjecture is open for general p/q).
+
 Physics: Bandurin et al., Science 351 (2016) 1055–1058; Sulpizio et al., Nature 576 (2019) 75–79.
 
 Cited for a statement only, not checked here: Jarník (1929) and Besicovitch (1934) on well-approximable numbers;
-Pommerenke (1986), Levin (1991), Yoccoz (in Hubbard 1993) and Milnor's conjecture, as stated in Kapiamba,
-arXiv:2103.03211; Barban (1964), Davenport & Halberstam, Michigan Math. J. 13 (1966) 485–489, Montgomery, Michigan Math. J.
+Pommerenke (1986), Levin (1991) and Yoccoz (in Hubbard 1993) for the O(1/q) limb bound; Barban (1964), Davenport & Halberstam, Michigan Math. J. 13 (1966) 485–489, Montgomery, Michigan Math. J.
 17 (1970) 33–39, Hooley, J. reine angew. Math. 274/275 (1975) 206–223, Friedlander & Goldston, Quart. J. Math. Oxford (2)
 47 (1996) 313–336 (variance of primes in progressions); Montgomery & Vaughan, Mathematika 20 (1973) 119–134 (large sieve
 constant); Torquato, Zhang & de Courcy-Ireland, J. Stat. Mech. (2018) 093401 (primes as a diffraction pattern).

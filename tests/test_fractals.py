@@ -400,24 +400,27 @@ def test_structure_function_drift_identity():
 
 
 def test_octave_energy_exact_windows(tables):
-    """The union of the windows |X(k/M - a/q)| <= 1/2 equals a brute-force float scan of the whole circle."""
+    """The union of the windows |X(k/M - a/q)| <= 1/2, built independently from integer interval ends, equals the
+    library's, point for point; from j = 7 on the windows overlap and are counted once."""
     mu, phi = tables
-    k = np.arange(M)
     a2 = np.random.default_rng(5).random(M)
-    oc = fr.octave_energy(a2, X, mu, phi, jmax=4)
+    oc = fr.octave_energy(a2, X, mu, phi, jmax=8)
     for o in oc:
         mask = np.zeros(M, dtype=bool)
-        for q in range(max(1 << o["j"], 1), 1 << (o["j"] + 1)):
-            if mu[q] == 0:
-                continue
-            for a in range(q):
-                if math.gcd(a, q) == 1:
-                    dist = np.abs(((k / M - a / q + 0.5) % 1.0) - 0.5) * X
-                    mask |= dist <= 0.5 + 1e-12
-        assert o["measure"] == pytest.approx(mask.sum() / M, abs=0.5 / M)
-        assert o["energy"] == pytest.approx(a2[mask].sum() / M, abs=1.0 / M)
-        nwin = sum(int(phi[q]) for q in range(max(1 << o["j"], 1), 1 << (o["j"] + 1)) if mu[q] != 0)
-        assert abs(o["measure"] - nwin / X) <= nwin / M       # each window holds M/X +- 1 grid points
+        qs = [q for q in range(max(1 << o["j"], 1), 1 << (o["j"] + 1)) if mu[q] != 0]
+        for q in qs:
+            for a in range(q) if q > 1 else [0]:
+                if math.gcd(a, q) != 1:
+                    continue
+                lo, hi, den = 2 * X * a * M - M * q, 2 * X * a * M + M * q, 2 * X * q    # |2X(kq - aM)| <= Mq
+                mask[np.arange(-((-lo) // den), hi // den + 1) % M] = True
+        assert round(o["measure"] * M) == int(mask.sum())
+        assert o["energy"] == pytest.approx(a2[mask].sum() / M, rel=1e-12)
+        nwin = sum(int(phi[q]) for q in qs)
+        if o["j"] <= 5:
+            assert abs(o["measure"] - nwin / X) <= nwin / M        # disjoint windows of M/X +- 1 grid points
+        if o["j"] >= 7:
+            assert o["measure"] < nwin / X - 0.1                     # overlapping windows are counted once
 
 
 def test_fourth_moment_model_direct(tables):
