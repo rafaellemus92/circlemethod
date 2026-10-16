@@ -1,0 +1,5 @@
+# S on each grid and the pickled results: ~900 MB, rebuilt by `python run_all.py`
+cache/
+__pycache__/
+.pytest_cache/
+*.pyc
