@@ -58,6 +58,10 @@ the tall near-rational spikes (Q large) and push the arc-edge sidelobes down (c 
 | `figures_escapes.py`, `escapes_report.py` | figures X0–X5 and the `escapes.md` writer (every number in it is read from the pickle) |
 | `tests/test_escapes.py` | pytest on a small grid (X = 10^4): Bessel identity in N, 4th moment = additive energy, transmission certificate, G and R_K grid = direct, theorem-shaped bound ≥ joint bound, almost-prime and smooth counts, the z ≤ 7 closed form, η constants, window bound monotone |
 | `escapes.md` | the escape-route results: certificates, one section per experiment, captions, "What this does and does not show", references |
+| `fractals.py`, `run_fractals.py` | the fractal lens M1–M5, A1–A3 (below): estimators (D_s, f(α), Hill, structure functions), no-fit models (Beckmann, Rice-FG, Farey staircase, spike-sum tail, fourth moment, triangular envelope), the singular-series surrogate H_R, Mandelbrot-set bulbs; `run_fractals.py` writes `cache/fractals.pkl`, `figures/fig_M*.png`, `fractals.md` |
+| `figures_fractals.py`, `fractals_report.py` | figures M1–M6 and the `fractals.md` writer (every number in it is read from the pickle) |
+| `tests/test_fractals.py` | pytest on X = 10^4: estimators on uniform and cascade measures, Farey count and staircase, sinc integrals, all-a FFT, Beckmann vs Rice, FG and q*, collapse, spike CCDF asymptote, Hill, sup prediction, structure functions, triangular envelope, spectral identity, surrogate identities, uncertainty products, bulb centres, size law, mediant counts |
+| `fractals.md` | the fractal-lens results: certificates, one section per block, the physics dictionary, literal versus analogy, synthesis, captions, references |
 
 ## Running
 
@@ -70,6 +74,8 @@ python run_all.py                  # ~5 min on 4 cores, peak RSS ~1.4 GB; writes
 python run_all.py --figures        # redraw figures and results.md from cache/ctx.pkl
 python run_escapes.py              # escape routes E0–E5: ~4 min, peak RSS ~1.4 GB; needs run_all.py's cache
 python run_escapes.py --report     # redraw figures/fig_X*.png and escapes.md from cache/escapes.pkl
+python run_fractals.py             # fractal lens M1–M5, A1–A3: RUNTIME_PLACEHOLDER; needs run_all.py's and run_escapes.py's caches
+python run_fractals.py --report    # redraw figures/fig_M*.png and fractals.md from cache/fractals.pkl
 ```
 
 `cache/` holds S on each grid (`S_<set>_N<N>_M<M>.npz`, 134 MB for M = 2^23) and the pickled results.
