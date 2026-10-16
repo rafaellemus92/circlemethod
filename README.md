@@ -139,22 +139,22 @@ not a constant comparable to a theorem's.
 
 `fractals.md` applies three of Mandelbrot's principles to the same objects at X = 10^6: scaling only between cutoffs
 (self-similarity is not self-affinity), roughness H versus intermittency D_s and f(α), and mild versus wild randomness
-(Noah versus Joseph). Every model is no-fit, every exponent is quoted with its window, and every result is checked
-against a surrogate made of the singular-series spikes q ≤ 1000 plus a Gaussian sea of matched power.
+(Noah versus Joseph). Every model is no-fit, every exponent is quoted with its window, and M1(d), M2, M3 and M4 are
+checked against a surrogate made of the singular-series spikes q ≤ 1000 plus a Gaussian sea of matched power.
 
 * **One fact read five ways.** The Farey count #{a/q : μ(q) ≠ 0, φ(q) ≤ y} ~ y²/2 (constant exactly ½), applied to
   spikes of height ψ/φ(q) and width 1/N, gives the minor-arc tail of index 1 in |S|², the coarse-grained straight-line
   spectrum f(α) = α (offset −ln(2L)/ln(1/ε), L = 10.82), the large-value count exponent 2(1 − σ), the kurtosis, and equal
   energy per octave of q (the L² wall). These are not independent confirmations.
 * **M1.** The spikes are a data collapse (heights scaled by μ(q)/φ(q), widths fixed at 1/N), not self-similar. The
-  collapse ends at q* = 521 (513 predicted, with no fit, from the variance of primes in progressions), which is not the
-  arc range √(N/2c).
-* **M3.** Minor arcs at Q ≤ 20 carry a tail that is wild in the untruncated idealisation; at Q ≳ 50 they are neither
-  wild nor exponential (residual spikes on a sea).
-* **M4.** The minor-arc walk is smooth below 1/N (generic), then diffusive with H₂ ≈ 0.52–0.53; heavy tails (Noah) show
-  in H_½ ≈ 0.78 at (20,10); no long memory.
+  collapse holds for φ(q) ≲ 300 and fades out where spike and sea are equal, at q* = 521 (513 predicted, with no fit,
+  from the variance of primes in progressions); q* is not the arc range √(N/2c).
+* **M3.** Minor arcs at Q ≤ 20 carry a tail of index ≈ 1 in |S|² over one to two decades, wild only in the untruncated
+  idealisation; at Q ≳ 50 they are neither wild nor exponential (residual spikes on a sea).
+* **M4.** The minor-arc walk is smooth below 1/N (generic), then diffusive, with H₂ ≈ 0.52–0.53 at (150,20) and
+  0.50–0.52 at (20,10) for Nℓ ∈ [10, 1000); heavy tails (Noah) show in H_½ ≈ 0.78 at (20,10); no long memory detected.
 * **M5.** The Mandelbrot set's bulbs share the Farey index set, circle order and a q^(−2) size law with the spikes
   (through Diophantine approximation, not dynamics); the mediant rule holds for bulbs in 140/140 neighbour pairs of F_21
   and for spikes in 56/140.
-* A physics dictionary sorts the vocabulary (phasors, conservation and leakage, uncertainty principle, diffraction,
-  equipartition: literal; spin, time, fluids: not).
+* A physics dictionary sorts the vocabulary (phasors, conservation and leakage, uncertainty principle, diffraction:
+  literal; equipartition: partly; spin, time, fluids: not).

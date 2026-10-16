@@ -358,7 +358,7 @@ def sup_prediction(Q: int, c: float, psi: float, mu: np.ndarray, phi: np.ndarray
 
 
 def sinc4_tail(c: float, xmax: float = 4000.0, n: int = 4_000_001) -> float:
-    """T4(c) = 2 int_c^inf sinc^4 (the tail beyond xmax is ~ 1/(3 pi^4 xmax^3), added analytically)."""
+    """T4(c) = 2 int_c^inf sinc^4 (the tail beyond xmax is ~ 1/(8 pi^4 xmax^3), added analytically)."""
     x = np.linspace(c, xmax, n)
     return float(2 * (np.trapezoid(np.sinc(x) ** 4, x) + 1.0 / (8 * math.pi**4 * xmax**3)))   # tail: (3/8)/(3 pi^4 x^3)
 
@@ -493,24 +493,27 @@ def order_parameter_entropy(w: np.ndarray, bins: int = 64) -> tuple[float, float
 # ================================================================ additions A1, A2, A3
 
 
-def octave_energy(a2: np.ndarray, X: int, mu: np.ndarray, phi: np.ndarray, jmax: int = 10, half: float = 0.5) -> list[dict]:
-    """(1/M) sum |S|^2 over grid points within |N(k/M - a/q)| <= half of every reduced a/q, squarefree q in [2^j, 2^{j+1})."""
+def octave_energy(a2: np.ndarray, X: int, mu: np.ndarray, phi: np.ndarray, jmax: int = 10) -> list[dict]:
+    """(1/M) sum |S|^2 over the union of the windows |X(k/M - a/q)| <= 1/2 (exact integer test |2X(kq - aM)| <= Mq) around
+    every reduced a/q with squarefree q in [2^j, 2^{j+1}); grid points in overlapping windows are counted once.
+    Per octave: energy, sum of mu^2/phi over the octave, and measure = (#grid points in the union)/M."""
     M = len(a2)
-    r = int(math.floor(half * M / X))
+    r = int(math.ceil(0.5 * M / X)) + 1
     off = np.arange(-r, r + 1, dtype=np.int64)
     out = []
     for j in range(jmax + 1):
-        tot, inv_phi = 0.0, 0.0
+        mask = np.zeros(M, dtype=bool)
+        inv_phi = 0.0
         for q in range(max(1 << j, 1), 1 << (j + 1)):
             if mu[q] == 0:
                 continue
             a = np.arange(q, dtype=np.int64)
-            a = a[np.gcd(a, q) == 1] if q > 1 else np.array([0])
-            centre = np.rint(a * M / q).astype(np.int64)
-            k = (centre[:, None] + off[None, :]).ravel() % M
-            tot += float(a2[k].sum())
+            a = a[np.gcd(a, q) == 1] if q > 1 else np.array([0], dtype=np.int64)
+            k = (a * M // q)[:, None] + off[None, :]
+            ok = np.abs(2 * X * (k * q - a[:, None] * M)) <= M * q
+            mask[k[ok] % M] = True
             inv_phi += 1.0 / phi[q]
-        out.append({"j": j, "energy": tot / M, "sum_inv_phi": inv_phi})
+        out.append({"j": j, "energy": float(a2[mask].sum()) / M, "sum_inv_phi": inv_phi, "measure": float(mask.sum()) / M})
     return out
 
 
@@ -661,7 +664,7 @@ def mediant_test(n: int, D: int, mu: np.ndarray, phi: np.ndarray) -> dict:
     bulb (max sin(pi t')/b^2, t' = min(t, 1 - t)) the mediant?  Is the tallest spike (max |mu(b)|/phi(b), ties to the
     smaller b) the mediant?  Also count mediants with non-squarefree denominator."""
     F = farey(n)
-    res = {"pairs": 0, "bulb_mediant": 0, "spike_mediant": 0, "mediant_nonsquarefree": 0, "examples": []}
+    res = {"pairs": 0, "bulb_mediant": 0, "spike_mediant": 0, "mediant_nonsquarefree": 0, "examples": [], "detail": []}
     for (a1, q1), (a2, q2) in zip(F, F[1:]):
         lo, hi = a1 / q1, a2 / q2
         med = (a1 + a2, q1 + q2)
@@ -678,6 +681,8 @@ def mediant_test(n: int, D: int, mu: np.ndarray, phi: np.ndarray) -> dict:
         res["bulb_mediant"] += tb == med
         res["spike_mediant"] += ts == med
         res["mediant_nonsquarefree"] += mu[med[1]] == 0
+        res["detail"].append({"mediant": med, "bulb_ok": tb == med, "spike_ok": ts == med, "nonsquarefree": bool(mu[med[1]] == 0),
+                              "tallest_spike": ts})
         if ts != med and len(res["examples"]) < 4:
             res["examples"].append({"pair": ((a1, q1), (a2, q2)), "mediant": med, "tallest_spike": ts})
     return res

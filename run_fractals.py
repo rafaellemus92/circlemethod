@@ -115,8 +115,7 @@ def zoom_collapse(res, absS, psi, mu, phi):
     bins = np.arange(-10.0, 10.0001, 0.1)
     out = []
     for lo, hi in classes:
-        qs = [q for q in range(lo, hi + 1) if mu[q] != 0]
-        qs = [qs[int(i)] for i in np.linspace(0, len(qs) - 1, min(30, len(qs)))]
+        qs = [q for q in range(lo, hi + 1) if mu[q] != 0]                     # every squarefree q in the class
         xs, ys = [], []
         for q in qs:
             a_s = [a for a in range(1, q) if math.gcd(a, q) == 1]
@@ -177,6 +176,8 @@ def stage_primes_grid(res, psi, mu, phi, keep):
                 f"{F[-1].real:.2f} vs {Im.real:.2f}, n = {len(k)}", res)
         st = {"full": walk_stats(F), "n": len(k)}
         st["noah"] = walk_stats(np.cumsum(fr.noah_only(w, 11)), drift=False)
+        st["noah_seeds"] = [fr.local_hurst(LAGS, fr.structure_function(np.cumsum(fr.noah_only(w, sd)), LAGS, 2.0))
+                            for sd in range(11, 27)]              # the random phases' seed matters when few |w| dominate
         st["joseph"] = walk_stats(np.cumsum(fr.joseph_only(w)), drift=False)
         res["walks"][("primes", Q, c)] = st
         wM = S[A.idx] ** 2 * e_minus(X, A.idx, M) / M
@@ -252,13 +253,12 @@ def spectrum_stats(res, a2p, a2c, a2h, psi, L2, mu, phi, sea_level):
     certify("atom share and L", abs(out["atom_share"] - 0.1553) <= 5e-4 and abs(L - 10.823) <= 5e-3,
             f"atoms {out['atom_share']:.4f}, L {L:.3f}", res)
     # (a) compensated rank-mass
-    ranks = np.unique(np.r_[np.geomspace(1, 1e5, 400).astype(int), 2 ** np.arange(17)])
     out["rank_mass"] = {}
     for tag in ("primes", "hybrid", "cramer"):
         for j in ((3, 5, 6, 9) if tag == "primes" else (6,)):
-            m = fr.rank_mass(measures[tag], j, 10**5)
-            rj = ranks[ranks <= len(m)]                  # 2^23 / 2^9 = 16384 boxes at j = 9
-            out["rank_mass"][(tag, j)] = {"ranks": rj, "comp": 2 * L * rj * m[rj - 1]}
+            m = fr.rank_mass(measures[tag], j, 10**5)        # every rank up to 10^5 (16384 boxes at j = 9)
+            rj = np.arange(1, len(m) + 1)
+            out["rank_mass"][(tag, j)] = {"ranks": rj, "comp": 2 * L * rj * m}
     eps6 = 2**6 / M
     kap = fr.box_capture(X * eps6)
     out["staircase"] = fr.farey_staircase(L, mu, phi, kappa=kap, sea=sea_level * eps6, qmax=20000)
@@ -275,7 +275,7 @@ def spectrum_stats(res, a2p, a2c, a2h, psi, L2, mu, phi, sea_level):
         eps = 2**j / M
         nn, f = fr.cumulative_spectrum(fr.box_masses(measures["primes"], j), eps, alphas)
         out["cumulative"][j] = {"eps": eps, "alpha": alphas, "N": nn, "f": f, "offset": -math.log(2 * L) / math.log(1 / eps),
-                                "alpha_lo": math.log(60 * L) / math.log(1 / eps)}
+                                "alpha_lo": math.log(120 * L) / math.log(1 / eps)}   # model N_< = 60
     ss = np.round(np.arange(0.80, 1.2601, 0.02), 2)
     out["cj"] = fr.chhabra_jensen(measures["primes"], [5, 7], list(ss))
     out["offsets"] = {j: -math.log(2 * L) / math.log(1 / (2**j / M)) for j in (3, 5, 7, 9, 11, 13)}
@@ -327,7 +327,7 @@ def minor_arc_stats(res, a2p, a2c, a2h, measures, psi, L2, mu, phi, sea_level):
         row["sup_pred"] = sp
         row["model"] = fr.spike_ccdf_model(ts, p["mean_m"], meas_m, X, psi, mu, phi, Q, c, levels=levels)
         row["asymptote"] = psi**2 / (2 * X * meas_m * ts * p["mean_m"])
-        row["pareto_range"] = (5.0, 0.04 * sp["sup2"] / p["mean_m"])
+        row["pareto_range"] = (5.0, 0.04 * p["sup2"] / p["mean_m"])
         row["E4_model"] = fr.fourth_moment_model(Q, c, psi, X, mu, phi)
         m3[(Q, c)] = row
         if (Q, c) in CCDF_PAIRS:
@@ -353,11 +353,9 @@ def minor_arc_stats(res, a2p, a2c, a2h, measures, psi, L2, mu, phi, sea_level):
 
 def additions(res, a2p, psi, L2, mu, phi, sea_level):
     oct_ = fr.octave_energy(a2p, X, mu, phi, jmax=10)
-    r = int(math.floor(0.5 * M / X))
     sea_power = L2 - res["hybrid_sumsq"][1000]          # sea energy per unit of alpha in the surrogate
     for o in oct_:
-        nwin = sum(int(phi[q]) for q in range(max(1 << o["j"], 1), 1 << (o["j"] + 1)) if mu[q] != 0)
-        o["window_measure"] = nwin * (2 * r + 1) / M
+        o["window_measure"] = o["measure"]
         o["spike_model"] = fr.SINC2_HALF * psi**2 / X * o["sum_inv_phi"] / L2
         o["spike_sea_model"] = o["spike_model"] + sea_power * o["window_measure"] / L2
         o["frac"] = o["energy"] / L2
@@ -386,10 +384,9 @@ def stage_xscaling(res):
         mu_ = kept / kept.sum()
         del kept
         j = int(round(math.log2(8 * Ms / Xs)))
-        ranks = np.unique(np.r_[np.geomspace(1, 2e4, 300).astype(int), 2 ** np.arange(15)])
-        m = fr.rank_mass(mu_, j, int(ranks[-1]))
-        ranks = ranks[ranks <= len(m)]                   # only 1024 boxes at X = 10^4
-        out.append({"X": Xs, "L": L, "j": j, "Neps": Xs * 2**j / Ms, "ranks": ranks, "comp": 2 * L * ranks * m[ranks - 1]})
+        m = fr.rank_mass(mu_, j, 20000)                     # every rank (only 1024 boxes at X = 10^4)
+        ranks = np.arange(1, len(m) + 1)
+        out.append({"X": Xs, "L": L, "j": j, "Neps": Xs * 2**j / Ms, "ranks": ranks, "comp": 2 * L * ranks * m})
         del mu_
         log(f"M2(f) X = {Xs}: L = {L:.3f}")
     res["m2"]["xscaling"] = out

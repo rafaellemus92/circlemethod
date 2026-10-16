@@ -349,3 +349,115 @@ def test_mediant_counts_F8(tables):
     r = fr.mediant_test(8, 120, mu, phi)
     assert (r["pairs"], r["bulb_mediant"], r["spike_mediant"], r["mediant_nonsquarefree"]) == (22, 22, 10, 8)
     assert fr.farey(5) == [(0, 1), (1, 5), (1, 4), (1, 3), (2, 5), (1, 2), (3, 5), (2, 3), (3, 4), (4, 5), (1, 1)]
+
+
+# ------------------------------------------------------------------ direct tests of the functions behind the report's numbers
+def test_spike_collapse_rows_direct(small, tables):
+    """Every moment in a collapse row equals a brute-force computation from S(a/q) evaluated by S_rational."""
+    mu, phi = tables
+    lam, psi = small["lam"], small["psi"]
+    n = np.flatnonzero(lam)
+    for row in fr.spike_collapse(n, lam[n], psi, [30, 31, 101], mu, phi):
+        q = row["q"]
+        res = np.bincount(n % q, weights=lam[n], minlength=q)
+        Sa = np.array([S_rational(a, q, res) for a in range(q) if math.gcd(a, q) == 1])
+        y = np.abs(Sa) * phi[q] / psi
+        Z = mu[q] * Sa * phi[q] / psi - 1.0
+        red = np.gcd(np.arange(q), q) == 1
+        assert row["mean"] == pytest.approx(y.mean(), rel=1e-12)
+        assert row["sd"] == pytest.approx(y.std(), rel=1e-9)
+        assert row["cos"] == pytest.approx(np.mean((mu[q] * Sa).real / np.abs(Sa)), rel=1e-12)
+        assert row["E2"] == pytest.approx(np.mean(np.abs(Z) ** 2), rel=1e-9)
+        assert row["EZ2"] == pytest.approx(np.mean(Z**2).real, rel=1e-9, abs=1e-15)
+        assert row["V"] == pytest.approx(np.sum((res[red] - res[red].sum() / phi[q]) ** 2), rel=1e-12)
+
+
+def test_spike_ccdf_truncation_branch(tables):
+    """With Q > 0 the spikes q <= Q contribute only beyond |x| = c; the rest contribute in full."""
+    mu, phi = tables
+    lv = fr.SincLevels()
+    N, psi, mean_m, meas, Q, c = 10**6, 1e6, 1.0, 0.5, 5, 3.0
+    ts = np.array([1e6, 1e8, 1e10])
+    P = fr.spike_ccdf_model(ts, mean_m, meas, N, psi, mu, phi, Q, c, qcap=2000, levels=lv)
+    P0 = fr.spike_ccdf_model(ts, mean_m, meas, N, psi, mu, phi, 0, 0.0, qcap=2000, levels=lv)
+    for t, p in zip(ts, P):
+        tot = 0.0
+        for q in range(1, 2001):
+            if mu[q] != 0:
+                u = math.sqrt(t * mean_m) * phi[q] / psi
+                tot += phi[q] * float(lv.measure(u, c if q <= Q else 0.0))
+        assert p == pytest.approx(tot / (N * meas), rel=1e-12)
+    assert np.all(P <= P0) and P[-1] < 0.9 * P0[-1]
+
+
+def test_structure_function_drift_identity():
+    rng = np.random.default_rng(3)
+    F = np.cumsum(rng.normal(size=5000) + 1j * rng.normal(size=5000) + 0.3)
+    lags = [1, 4, 16]
+    for L, v in zip(lags, fr.structure_function(F, lags, 2.0, drift=True)):
+        d = F[L:] - F[:-L]
+        assert v == pytest.approx(np.mean(np.abs(d - d.mean()) ** 2), rel=1e-10)
+
+
+def test_octave_energy_exact_windows(tables):
+    """The union of the windows |X(k/M - a/q)| <= 1/2 equals a brute-force float scan of the whole circle."""
+    mu, phi = tables
+    k = np.arange(M)
+    a2 = np.random.default_rng(5).random(M)
+    oc = fr.octave_energy(a2, X, mu, phi, jmax=4)
+    for o in oc:
+        mask = np.zeros(M, dtype=bool)
+        for q in range(max(1 << o["j"], 1), 1 << (o["j"] + 1)):
+            if mu[q] == 0:
+                continue
+            for a in range(q):
+                if math.gcd(a, q) == 1:
+                    dist = np.abs(((k / M - a / q + 0.5) % 1.0) - 0.5) * X
+                    mask |= dist <= 0.5 + 1e-12
+        assert o["measure"] == pytest.approx(mask.sum() / M, abs=0.5 / M)
+        assert o["energy"] == pytest.approx(a2[mask].sum() / M, abs=1.0 / M)
+        nwin = sum(int(phi[q]) for q in range(max(1 << o["j"], 1), 1 << (o["j"] + 1)) if mu[q] != 0)
+        assert abs(o["measure"] - nwin / X) <= nwin / M       # each window holds M/X +- 1 grid points
+
+
+def test_fourth_moment_model_direct(tables):
+    from scipy.integrate import quad
+
+    mu, phi = tables
+    Q, c, psi, N = 20, 10.0, 1e6, 10**6
+    got = fr.fourth_moment_model(Q, c, psi, N, mu, phi, qcap=500)
+    hi = sum(1.0 / phi[q] ** 3 for q in range(Q + 1, 501) if mu[q] != 0)
+    lo = sum(1.0 / phi[q] ** 3 for q in range(1, Q + 1) if mu[q] != 0)
+    T4 = 2 * sum(quad(lambda x: np.sinc(x) ** 4, x0, x0 + 1)[0] for x0 in range(10, 4000)) + 2 / (8 * math.pi**4 * 4000**3)
+    assert got == pytest.approx(psi**4 / N * (2 / 3 * hi + T4 * lo), rel=1e-6)
+
+
+def test_cells_large_values_and_window_maxima():
+    v = np.arange(32.0)
+    minor = np.ones(32, dtype=bool)
+    minor[9] = False
+    assert list(fr.cell_maxima(v, minor)) == [7.0, 23.0, 31.0]
+    assert fr.large_value_counts(np.arange(16.0), 4, [0.5, 1.0, 1.5], cell=4) == [4, 3, 2]
+    assert list(fr.window_max_median(np.arange(16.0), [1, 2], 2.0)) == [4.0, 4.5]
+
+
+def test_q_star_measured_small_grid(small):
+    """K(q) equals the direct S_rational computation, and q* at X = 10^4 lands near the FG prediction (75)."""
+    lam, psi = small["lam"], small["psi"]
+    n = np.flatnonzero(lam)
+    primes = [int(p) for p in primes_upto(400) if p >= 7]
+    qs, K = fr.q_star_measured(n, lam[n], psi, X, primes)
+    q = 31
+    res = np.bincount(n % q, weights=lam[n], minlength=q)
+    Sa = np.array([S_rational(a, q, res) for a in range(1, q)])
+    assert K[q] == pytest.approx(math.sqrt(np.mean(np.abs(Sa + res[1:].sum() / (q - 1)) ** 2)) * (q - 1) / psi, rel=1e-10)
+    assert qs is not None and 50 <= qs <= 110
+
+
+def test_mediant_detail_consistent(tables):
+    mu, phi = tables
+    d = fr.mediant_test(8, 120, mu, phi)
+    assert len(d["detail"]) == d["pairs"]
+    assert sum(x["bulb_ok"] for x in d["detail"]) == d["bulb_mediant"]
+    assert sum(x["spike_ok"] for x in d["detail"]) == d["spike_mediant"]
+    assert sum(x["nonsquarefree"] for x in d["detail"]) == d["mediant_nonsquarefree"]

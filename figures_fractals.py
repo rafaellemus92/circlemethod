@@ -35,7 +35,7 @@ def fig_M1(res, out):
     cols = [BLUE, AQUA, VIOLET, RED]
     for z, col in zip(res["m1_zoom"], cols):
         lo, hi = z["class"]
-        ax.plot(z["centres"], z["median"], color=col, lw=1.2, label=f"q in [{lo}, {hi}] (median of {z['n_q']} q)")
+        ax.plot(z["centres"], z["median"], color=col, lw=1.2, label=f"q in [{lo}, {hi}] ({z['n_q']} squarefree q; median)")
         ax.fill_between(z["centres"], z["p10"], z["p90"], color=col, alpha=0.10, lw=0)
     ax.set_yscale("log")
     ax.set_ylim(1e-3, 300)
@@ -68,6 +68,7 @@ def fig_M1(res, out):
     ins = ax.inset_axes([0.07, 0.67, 0.31, 0.25])
     ins.scatter(ph, [r["cos"] for r in rows], s=2, color=VIOLET, lw=0, rasterized=True)
     ins.plot([r["phi"] for r in pr], [r["rice_cos"] for r in pr], color=INK2, lw=0.8)
+    ins.scatter([r["phi"] for r in sub], [r["beck_cos"] for r in sub], s=6, facecolor="none", edgecolor=INK, lw=0.4)
     ins.set_xscale("log")
     ins.set_ylim(-0.05, 1.05)
     ins.set_title("⟨cos θ⟩: locked phase = real", fontsize=7, loc="left")
@@ -92,8 +93,9 @@ def fig_M1(res, out):
     NL = np.array([2**j for j in wm["js"]]) * X / res["M"]
     for tag in ("primes", "hybrid", "cramer"):
         ax.plot(NL, wm[tag], marker="o", ms=3.5, lw=1.1, label=MEAS_LABEL[tag], **MEAS_STYLE[tag])
-    ax.axhline(math.sqrt(res["L2"]) / psi, color=MUTED, lw=0.8)
-    ax.text(3000, math.sqrt(res["L2"]) / psi * 0.8, "sea rms √ΣΛ²/ψ", fontsize=7, color=INK2, va="top")
+    sea = math.sqrt(res["L2"] - res["hybrid_sumsq"][1000]) / psi
+    ax.axhline(sea, color=MUTED, lw=0.8)
+    ax.text(3000, sea * 0.8, "sea rms √(ΣΛ² − Σw*²)/ψ (surrogate)", fontsize=7, color=INK2, va="top")
     ax.axvspan(120, 16000, color=GRID, alpha=0.6, zorder=0)
     x0, y0 = 300.0, 0.01
     ax.plot([x0, x0 * 10, x0 * 10, x0], [y0, y0, y0 * math.sqrt(10), y0], color=INK2, lw=0.8)
@@ -104,7 +106,7 @@ def fig_M1(res, out):
     ax.set_ylabel("median over windows of max |S|/ψ")
     ax.set_title("(d) statistical self-affinity of the window maxima (shaded: NL ∈ [120, 16000])")
     ax.legend(loc="upper left", fontsize=7.5)
-    _suptitle(fig, "Fig M1. The spikes are a data collapse (heights scale by μ(q)/φ(q), widths stay 1/N) up to a computable cutoff q*")
+    _suptitle(fig, "Fig M1. The spikes are a data collapse (heights scale by μ(q)/φ(q), widths stay 1/N) for φ ≲ 300, fading out at a computable q*")
     fig.tight_layout()
     _save(fig, out, "fig_M1_collapse.png")
 
@@ -115,7 +117,7 @@ def fig_M2(res, out):
     L, M, X = m2["L"], res["M"], res["X"]
     fig, axes = plt.subplots(2, 3, figsize=(18, 10.5))
     ax = axes[0, 0]
-    for j, col in ((3, VIOLET), (5, BLUE), (6, AQUA), (9, ORANGE)):
+    for j, col in ((3, VIOLET), (5, BLUE), (6, AQUA), (9, MAGENTA)):
         d = m2["rank_mass"][("primes", j)]
         ok = d["ranks"] <= 0.95 * M / 2**j                  # the last boxes hold the removed atoms (mass ~ 0)
         ax.plot(d["ranks"][ok], d["comp"][ok], color=col, lw=1.1, label=f"primes, Nε = {X * 2**j / M:.1f}")
@@ -144,11 +146,12 @@ def fig_M2(res, out):
         ax.plot(a[ok], d["f"][ok], color=col, lw=1.4, label=rf"$f_<(\alpha)$, ε = $2^{{{int(round(math.log2(d['eps'])))}}}$")
         ax.plot(a, a + d["offset"], color=col, lw=0.8, ls=(0, (4, 2)))
     cj = m2["cj"]
-    ax.plot([cj[s]["alpha"][0] for s in cj], [cj[s]["f"][0] for s in cj], "o", ms=3.5, color=INK, ls="none",
-            label="Chhabra–Jensen local slopes, s ∈ [0.8, 1.26]")
-    ax.plot([0.3, 1.0], [0.3, 1.0], color=INK2, lw=0.8)
+    cs = [s for s in sorted(cj) if cj[s]["f"][0] >= 0]
+    ax.plot([cj[s]["alpha"][0] for s in cs], [cj[s]["f"][0] for s in cs], "o", ms=3.5, color=INK, ls="none",
+            label=f"Chhabra–Jensen local slopes, s ∈ [{min(cs):.2f}, {max(cs):.2f}]")
+    ax.plot([0.0, 1.0], [0.0, 1.0], color=INK2, lw=0.8)
     ax.plot([], [], color=INK2, lw=0.8, ls=(0, (4, 2)), label="no-fit lines α − ln(2L)/ln(1/ε)")
-    ax.set_xlim(0.3, 1.0)
+    ax.set_xlim(0.0, 1.0)
     ax.set_ylim(0.0, 1.0)
     ax.set_xlabel("coarse Hölder exponent α")
     ax.set_ylabel("f(α)")
@@ -209,7 +212,7 @@ def fig_M2(res, out):
     ax.set_ylim(0.3, 30)
     ax.set_xlabel("rank i")
     ax.set_ylabel("2L(X) · i · m₍ᵢ₎")
-    ax.set_title("(f) the same law at every X, each with its own L(X)")
+    ax.set_title("(f) each X with its own L(X): flat from X ≈ 10⁵; the sea takes over early at small X")
     ax.legend(loc="upper left", fontsize=7)
     _suptitle(fig, "Fig M2. The spectral measure |S|²dα: the Farey count read per box (coarse-grained, ε tied to N; Diophantine, not a cascade)")
     fig.tight_layout()
@@ -279,7 +282,7 @@ def fig_M3(res, out):
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, loc="upper center", fontsize=6.8, ncol=2)
-    ax.set_title("(f) wild at small Q, neither wild nor exponential at large Q")
+    ax.set_title("(f) index ≈ 1 in |S|² at Q ≤ 20 (wild only untruncated); neither wild nor exponential at Q ≳ 50")
     _suptitle(fig, "Fig M3. Mild versus wild on the minor arcs, by (Q, c): the tail of |S|² is the Farey count again, truncated by the arcs")
     fig.tight_layout()
     _save(fig, out, "fig_M3_tails.png")
@@ -340,6 +343,9 @@ def fig_M4(res, out):
                 vals.append(float(np.mean(d["H"][sel])) if d is not None else np.nan)
             ax.bar(np.arange(len(groups)) + (k - 2.5) * width, vals, width, color=col, hatch=hatch, edgecolor=SURF, lw=0.6,
                    label=rf"$H_{{{p:g}}}$, {pr}")
+            for g, v in enumerate(vals):
+                if not np.isfinite(v):
+                    ax.text(g + (k - 2.5) * width, 0.02, "not computed", ha="center", va="bottom", fontsize=5.5, rotation=90, color=INK2)
             k += 1
     ax.axhline(0.5, color=INK, lw=0.8)
     ax.set_xticks(np.arange(len(groups)), names, fontsize=7.5)
@@ -363,15 +369,16 @@ def fig_M4(res, out):
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("|d| = |N′ − N| (neighbouring targets)")
-    ax.set_ylabel("binned |I_m(N + d)|²")
+    ax.set_ylabel(r"binned $|I_m(N+d)|^2$")
     ax.set_title("(d) H is a Fejér average of the minor-arc counts at nearby targets, (150, 20)")
     ax.set_ylim(top=max(sp["P_binned"]) * 12)
     ax.legend(loc="lower left", fontsize=7)
-    ins = ax.inset_axes([0.36, 0.08, 0.36, 0.3])
+    ins = ax.inset_axes([0.44, 0.1, 0.3, 0.27])
     ins.plot(xl, np.abs(sp["S2_spectral"][:-1] / sp["S2_direct"][:-1] - 1) + 1e-18, color=INK, lw=0.8)
     ins.set_xscale("log")
     ins.set_yscale("log")
-    ins.set_title("|spectral/direct − 1|", fontsize=6.5, loc="left")
+    ins.set_title("certificate: |spectral/direct − 1|", fontsize=6.5, loc="left")
+    ins.set_xlabel("Nℓ/M", fontsize=6)
     ins.tick_params(labelsize=6)
     _suptitle(fig, "Fig M4. Roughness of the minor-arc walk: band limit (generic), residual spikes (H₂ ≈ 0.52), heavy tails (Noah), no long memory")
     fig.tight_layout()
@@ -459,12 +466,24 @@ def fig_M5(res, out):
         else:
             ax.plot(th, 0, "x", color=RED, ms=4)
     ax.axhline(0, color=INK, lw=0.8)
+    for d in m5["mediant"][21].get("detail", []):
+        a, b = d["mediant"]
+        th = min(a / b, 1 - a / b)
+        if d["nonsquarefree"]:
+            ax.plot(th, -0.06, "+", color=RED, ms=5, mew=1.0)
+        elif not d["spike_ok"]:
+            ax.plot(th, -0.06, "o", color=RED, ms=3)
+        else:
+            ax.plot(th, -0.06, "o", mfc="none", mec=MUTED, ms=3)
     med = m5["mediant"][21]
     ax.text(0.02, 0.92, f"mediant rule (F₂₁): bulbs {med['bulb_mediant']}/{med['pairs']}, spikes {med['spike_mediant']}/{med['pairs']}; "
             f"{med['mediant_nonsquarefree']} mediants non-squarefree", transform=ax.transAxes, fontsize=7.5)
     ax.plot([], [], color=BLUE, lw=1.2, label="bulb size (÷ the 1/2 bulb)")
     ax.plot([], [], color=ORANGE, lw=1.2, label="spike mass (÷ the q = 1, 2 mass), downwards")
-    ax.plot([], [], "x", color=RED, ls="none", label="non-squarefree q: no spike")
+    ax.plot([], [], "x", color=RED, ls="none", label="non-squarefree q ≤ 21: no spike")
+    ax.plot([], [], "o", mfc="none", mec=MUTED, ms=3, ls="none", label="mediant (q ≥ 22) is the tallest spike")
+    ax.plot([], [], "o", color=RED, ms=3, ls="none", label="mediant is not the tallest spike")
+    ax.plot([], [], "+", color=RED, ms=5, ls="none", label="mediant not squarefree (no spike)")
     ax.set_xlim(0, 0.52)
     ax.set_xlabel("θ = a/q (denominators ≤ 21)")
     ax.set_ylabel("relative size")
@@ -493,12 +512,12 @@ def fig_M6(res, out):
     ax = axes[1]
     a2 = res["a2"]
     V = np.array([res["X"] ** s for s in a2["sigma"]])
-    ax.plot(V, a2["cells"], "o-", color=BLUE, ms=5, label="cells (width ≈ 1/N) with max |S| ≥ N^σ")
-    ax.plot(V, a2["spikes"], "s-", color=ORANGE, ms=5, label="Farey count of spikes taller than N^σ")
-    ax.plot(V, a2["sieve_bound"], color=INK2, lw=1.0, ls=(0, (4, 2)), label="dual large sieve bound (rigorous)")
+    ax.plot(V, a2["cells"], "o-", color=BLUE, ms=5, label=r"cells (width ≈ 1/N) with max |S| ≥ $N^\sigma$")
+    ax.plot(V, a2["spikes"], "s-", color=ORANGE, ms=5, label=r"Farey count of spikes taller than $N^\sigma$")
+    ax.plot(V, a2["sieve_bound"], color=INK2, lw=1.0, ls=(0, (4, 2)), label="large-sieve bound (rigorous)")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("level V = N^σ")
+    ax.set_xlabel(r"level V = $N^\sigma$")
     ax.set_ylabel("count")
     ax.set_title("(b) large values: count exponent 2(1 − σ) (Jarník–Besicovitch shadow)")
     ax.legend(loc="lower left", fontsize=7)
@@ -520,7 +539,7 @@ def fig_M6(res, out):
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("frequency window L (units of 1/N)")
-    ax.set_ylabel(r"$\sigma_n\,\sigma_\alpha$")
+    ax.set_ylabel(r"$\sigma_x\,\sigma_\xi$")
     ax.set_title("(c) the uncertainty principle: sharp sums have infinite spread (leakage)")
     ax.legend(loc="upper left", fontsize=7)
     _suptitle(fig, "Fig M6. Two more readings of the Farey count, and the uncertainty principle behind the arc widths")
