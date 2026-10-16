@@ -189,9 +189,11 @@ def test_model_spikes_values(small):
 
     ctx = small["ctx"]
     Qp = 30
-    Sst = es.model_spikes(X, M, Qp, ctx.mu, ctx.phi, np.ones(M, dtype=bool))
+    keep = ~small["A"].mask()                                     # minor arcs only, as in e0_obstacle
+    Sst = es.model_spikes(X, M, Qp, ctx.mu, ctx.phi, keep)
+    assert np.all(Sst[~keep] == 0) and np.count_nonzero(Sst) > 1000
     rng = np.random.default_rng(5)
-    for k in rng.integers(0, M, 3000):
+    for k in rng.choice(np.flatnonzero(keep), 3000, replace=False):
         hit = None
         for q in range(1, Qp + 1):
             if ctx.mu[q] == 0:
@@ -221,10 +223,15 @@ def test_e5_scaling_counts(small):
     S2M = ctx.S[A.idx] ** 2
     Ns = es.even_targets(X)
     IM = np.array([np.sum(S2M * e_minus(int(N), A.idx, M)).real / M for N in Ns])   # direct, no FFT
-    assert o["Q"] == Q and abs(o["P_m"] - Pm) <= 1e-12 * Pm
+    assert o["Q"] == Q and abs(o["P_m"] - Pm) <= 1e-12 * Pm and o["meas"] == len(A.idx) / M
     assert o["n_transmitted"] == int(np.sum(IM > Pm)) and o["n_closes"] == int(np.sum(Pm / IM < 0.99))
+    assert o["transmitted"] == [int(N) for N in Ns[IM > Pm]] and o["n_transmitted"] > 0
+    assert sorted(N for N, _ in o["near"]) == [int(N) for N in Ns[Pm / IM < 1.01]]
     assert o["need"] == pytest.approx(Pm * SS2e[X] / IM[-1], rel=1e-9)
-    assert o["certificates_ok"]
+    assert o["certificates_ok"] and all(ctx.r2[N] >= IM[j] - Pm for j, N in enumerate(Ns) if IM[j] > Pm)
+    # the certificate check must be able to fail: with r2 = 0 (no primes) no transmitted target is certified
+    bad = es.e5_scaling(X, ctx.S.copy(), np.zeros_like(ctx.lam), ctx.mu, ctx.phi, SS2e, c)
+    assert bad["n_transmitted"] > 0 and not bad["certificates_ok"]
 
 
 def test_report_decision_margin():

@@ -54,7 +54,7 @@ def fig_X0(res, out):
     ins.plot(wk.real * 100, wk.imag * 100, color=BLUE, lw=0.6)
     ins.plot([0], [0], "o", color=INK, ms=3.5)
     ins.plot([wk[-1].real * 100], [wk[-1].imag * 100], "s", color=ORANGE, ms=4)
-    ins.set_title("actual walk, zoomed (units of 0.01·R2; ● start, ■ end)", fontsize=6.5, loc="left")
+    ins.set_xlabel("walk ×100 (● start, ■ end)", fontsize=6.5)
     ins.set_aspect("equal")
     ins.tick_params(labelsize=6)
     ax.legend(loc="upper left", fontsize=6.8)
@@ -163,18 +163,24 @@ def fig_X5(res, out):
     ss2, pr = o["SS2_targets"], o["pm_ratio_targets"]
     ax.scatter(ss2, pr, s=0.5, color=BLUE, lw=0, rasterized=True)
     tr = o["transmitted"]
-    ax.scatter([t[2] for t in tr], [t[1] for t in tr], s=18, color=ORANGE, zorder=3, edgecolor=SURF, linewidth=0.6,
-               label=f"{len(tr)} targets with P_m < I_M(N): certified R2(N) > 0 by magnitudes alone")
+    cl = [t for t in tr if t[1] < 0.99]
+    ud = [t for t in tr if t[1] >= 0.99]
+    ax.scatter([t[2] for t in cl], [t[1] for t in cl], s=18, color=ORANGE, zorder=3, edgecolor=SURF, linewidth=0.6,
+               label=f"{len(cl)} targets close (P_m/I_M(N) < 0.99): R2(N) > 0 by magnitudes alone")
+    ax.scatter([t[2] for t in ud], [t[1] for t in ud], s=18, facecolor="none", edgecolor=ORANGE, linewidth=1.0, zorder=3,
+               label=f"{len(ud)} undecided with ratio in [0.99, 1) (still grid-certified)")
     for t in res["e5_trunc"]:
         from singular_series import SS2_product
         ax.scatter([SS2_product(t["N"])], [t["ratio"]], s=70, marker="D", facecolor="none", edgecolor=INK, linewidth=1.0,
                    zorder=4)
-        below = t["ratio"] < 1
-        ax.annotate(f"{t['N']:,}: S cut at N, Q = {t['Q']}", (SS2_product(t["N"]), t["ratio"]),
-                    xytext=(-8, -16) if below else (10, -14), ha="right" if below else "left",
-                    textcoords="offset points", fontsize=7, color=INK2,
-                    bbox=dict(boxstyle="round,pad=0.2", fc=SURF, ec="none", alpha=0.9))
-    ax.axhline(1.0, color=INK, lw=1.0)
+        if t["ratio"] < 1:
+            ax.annotate(f"{t['N']:,}: S cut at N, Q = {t['Q']}", (SS2_product(t["N"]), t["ratio"]), xytext=(-8, -16),
+                        ha="right", textcoords="offset points", fontsize=7, color=INK2)
+        else:                                   # far from X: lead the label out of the cloud into the empty corner
+            ax.annotate(f"{t['N']:,}: S cut at N, Q = {t['Q']}", (SS2_product(t["N"]), t["ratio"]), xytext=(1.45, 1.35),
+                        textcoords="data", ha="left", fontsize=7, color=INK2,
+                        arrowprops=dict(arrowstyle="-", color=INK2, lw=0.6))
+    _undecided(ax)
     ax.set_yscale("log")
     ax.set_xlabel("SS2(N)")
     ax.set_ylabel("P_m / I_M(N)  at (Q, c) = (223, 10)")
@@ -328,10 +334,10 @@ def fig_X4(res, out):
     pf = e4["profile"]
     ax.semilogy(pf["Nbeta"], pf["S"], color=BLUE, lw=1.0, label="sharp cutoff: |S(β)|/ψ")
     ax.semilogy(pf["Nbeta"], pf["S_eta"], color=INK, lw=1.0, label="smooth bump: |S_η(β)|/ψ_η")
-    noise = math.sqrt(e4["sum_w2"]) / e4["psi_eta"]
-    ax.axhline(noise, color=INK2, lw=0.8, ls=(0, (1, 2)))
-    ax.text(30, noise * 1.3, "primes' noise level √Σw²/ψ_η", ha="right", fontsize=7, color=INK2,
-            bbox=dict(boxstyle="round,pad=0.15", fc=SURF, ec="none", alpha=0.9))
+    far = np.asarray(pf["Nbeta"]) >= 10
+    rip = float(np.sqrt(np.mean(np.asarray(pf["S_eta"])[far] ** 2)))
+    ax.plot([10, 30], [rip, rip], color=INK2, lw=0.9, ls=(0, (1, 2)),
+            label="rms of |S_η| beyond Nβ = 10 (the primes' fluctuation)")
     for c in (5, 10, 20):
         ax.axvline(c, color=MUTED, lw=0.8)
         ax.text(c + 0.2, 1.4e-4, f"c = {c}", fontsize=7, color=INK2)
@@ -359,7 +365,7 @@ def fig_X4(res, out):
     ax.set_xlabel("Q")
     ax.set_ylabel("ternary B3 / main")
     ax.set_title("(b) ternary: smoothing removes the c = 5 plateau")
-    ax.text(0.02, 0.02, "sharp: all three c coincide for Q ≤ 20 (blue under green); c = 10 and 20 up to Q = 50",
+    ax.text(0.02, 0.02, "sharp: all three c coincide for Q ≤ 20; c = 10 and 20 coincide up to Q = 100 (orange under green)",
             transform=ax.transAxes, fontsize=7, color=INK2)
     ax.legend(loc="upper right", fontsize=6.8, ncol=2)
     ax = axes[2]

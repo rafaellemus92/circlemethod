@@ -111,18 +111,20 @@ cancel, which is the open problem; nothing here attempts it. `escapes.md` instea
 tests, at the same X = 10^6, the classical relaxations under which the *magnitude* inequality does close:
 
 * **E0, the obstacle.** The 6.1 M minor-arc phasors at (150,20) form a walk 2.9× the signal long that ends 1% of the way
-  out; every magnitude-only refinement is longer still. Phase-summed windows ≈ 20/N wide would suffice at this N.
+  out; every magnitude-only refinement is longer still. Phase-summed windows ≈ 21/N wide would suffice at this N (W < 0.99).
 * **E1, average over N.** One energy budget Σ_N I_m(N)² = ∫_m|S|⁴ is shared by all targets, so at most 274 of the
   250,001 even N in [X/2, X] can fail at (150,20) (15,058 with the textbook sup form sup²·ΣΛ² of the 1937–38 proofs);
   none does.
-* **E5, single-N transmission.** With no relaxation, 21 very smooth N (SS2 ≈ 5) have P_m < I_M(N) at (223,10), 16 of
-  them below the 0.99 margin; the fraction falls at every tabulated X, from 2.8% at X = 10^4 to 0.0014% at 2·10^6.
+* **E5, single-N transmission.** With no relaxation, 21 smooth N close to X (SS2 ≈ 5) have P_m < I_M(N) at (223,10),
+  16 of them below the 0.99 margin; the share of targets with P_m < I_M(N) falls at every tabulated X, from 2.8% at
+  X = 10^4 to 0.0014% at 2·10^6.
 * **E2, Linnik (add powers of 2).** One power of 2 already closes the joint magnitude bound at Q ≥ 20 — generic
   averaging, as a random-shift control shows; the substitutes proofs can use push K to 4–7 at (150,20).
 * **E3, almost-primes.** Replacing one prime by m with Ω(m) ≤ 2 closes at (150,20), Ω ≤ 3–4 elsewhere; random sets of
   the same density never close. Chen's and Rényi's theorems are sieve theorems; r = 2 here is not Chen's 2.
-* **E4, smooth weight (control).** Suppresses the arc-edge sidelobes (to ≈ 1% of the peak at the c = 5 edge, against
-  6.4% for the sharp cutoff), which removes the 1.007 plateau of the ternary bound, and leaves the binary wall where it was.
+* **E4, smooth weight (control).** Suppresses the arc-edge sidelobes (to 0.9% of the peak just past the c = 5 edge,
+  against 5.7% for the sharp cutoff), which removes the 1.007 plateau of the ternary bound, and leaves the binary wall
+  where it was.
 
 Every K\*, r\* and z\* there is a finite-X statistic, with a decision margin (closes < 0.99 < undecided < 1.01 < fails),
 not a constant comparable to a theorem's.

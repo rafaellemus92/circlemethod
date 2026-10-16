@@ -105,9 +105,10 @@ def certificates(res) -> str:
     ]
     o223 = e1[(223, 10)]
     ns0 = X // 2 + (X // 2) % 2
-    sx = lambda N: float(o223["pm_ratio_targets"][(N - ns0) // 2])  # noqa: E731  P_m/I_M(N) with S_X at (223,10)
+    sx = lambda N: (f"{float(o223['pm_ratio_targets'][(N - ns0) // 2]):.3f}"  # noqa: E731  P_m/I_M(N), S_X, (223,10)
+                    if ns0 <= N <= X and N % 2 == 0 else "—")
     tr = [[f"{t['N']:,}", fact(t["N"]), f"2^{int(math.log2(t['M']))}", pair((t["Q"], t["c"])), f"{t['P_m'] / t['I_M']:.3f}",
-           lab(t["ratio"]), f"{sx(t['N']):.3f}"] for t in res["e5_trunc"]]
+           lab(t["ratio"]), sx(t["N"])] for t in res["e5_trunc"]]
     return ("## 0. Certificates\n\nEvery identity the experiments rely on, checked at full scale (M = 2^23 unless stated). "
             "The FFT sign convention is the one documented and checked in results.md.\n\n"
             + _table(["check", "result"], rows)
@@ -146,7 +147,7 @@ def sec_e0(res) -> tuple[str, dict]:
     dial_rows.append(["whole components", "∞", f"{a['dial_floor']:.3f}", f"{b['dial_floor']:.3f}"])
     lad = [[f"{m['Qp']}", f"{m['P_E'] / R2:.3f}", f"{m['P_star'] / R2:.3f}", f"{m['J_star'].real / R2:+.3f}",
             f"{m['bound'] / a['I_M']:.2f}"] for m in a["model"]]
-    indep = (a["P_m"] / a["I_M"]) ** 2
+    indep = (a["P_m"] / (0.99 * a["I_M"])) ** 2
     txt = f"""## 1. E0 — the obstacle, measured
 
 For one target N = X, the minor arcs add M·|m| phasors w_k = S(k/M)² e(−Nk/M)/M to the count. Laid head to tail they
@@ -175,13 +176,13 @@ N·Δ = B·X/M) and add |window integral| over all windows: W(B) = Σ|∫_window
 
 W drops below 0.99 at N·Δ ≈ {oa['dstar']:.0f} at (150,20) and ≈ {ob['dstar']:.0f} at (20,10) (log–log interpolation
 between the tabulated B). The equal-cell yardstick — W falling like (P_m/I_M)/√(NΔ) from W = P_m/I_M at NΔ = 1, as for
-equal, independent cells of width 1/N — would reach 1 at NΔ = (P_m/I_M)² = {indep:.1f}; it is too optimistic for two
+equal, independent cells of width 1/N — would reach 0.99 at NΔ = (P_m/(0.99·I_M))² = {indep:.1f}; it is too optimistic for two
 reasons. The cells are very unequal: the root-sum-square of the cell sums at width 1/N, √(Σ|cell|²) (the endpoint's rms if
 whole cells had independent random phases), is {a['random_phase_rms'] / a['rp_scale']:.1f}× σ_rp at (150,20) and
 {b['random_phase_rms'] / b['rp_scale']:.1f}× at (20,10), because unresolved spikes at a/q with q > Q concentrate the energy
 in a few cells. And neighbouring cells are correlated over the coherence length ≈ 1/N. At (20,10) the left-out spikes
 (q = 21…) carry coherent local integrals of size about N/φ(q)² that cancel only between different a/q with the same q (a
-Ramanujan sum, which is non-local), so the windows must be much wider before W < 1.
+Ramanujan sum, which is non-local), so the windows must be much wider before W < 0.99.
 
 **Reading.** At one N, with numbers: the binary wall is a statement about phases. The walk's path is
 {a['P_m'] / a['I_M']:.1f}× the radius it would have to leave to spoil the count, yet it never strays more than
@@ -230,7 +231,9 @@ Chebyshev gives F ≤ U / min_𝒩 I_M(N)², with four choices of U:
 * **oracle**: U = Σ_(N∈𝒩) I_m(N)², Chebyshev applied to the actual values — no theorem gives it either.
 
 sup is the grid maximum of |S|² on the minor arcs. κ = ∫_m|S|⁴/(P_m²/|m|) is the minor-arc kurtosis (2 for a Rayleigh
-sea). "harmful sign" means I_m(N) < 0.
+sea). "harmful sign" means I_m(N) < 0. F and its bounds use the threshold |I_m| ≥ I_M; with the 0.99 decision margin
+every bound grows by 1/0.99² ≈ 1.02 (at (150,20): {a['bound_4th'] / 0.99 ** 2:,.0f} and, textbook,
+{a['bound_textbook'] / 0.99 ** 2:,.0f}), and F stays 0.
 
 {_table(["(Q,c)", "∫_m|S|⁴", "κ", "F ≤ (4th moment)", "F ≤ (sup²·P_m)", "F ≤ (sup²·ΣΛ²)", "F ≤ (oracle)", "F", "max |I_m|/I_M (N)", "P_m/I_M(N) min–median–max", "# P_m < I_M(N)"], rows)}
 
@@ -267,77 +270,106 @@ primes, F counts failures of the method, not of Goldbach.
 
 def sec_e5(res) -> str:
     e1 = res["e1"]
+    X = res["X"]
     o = e1[(223, 10)]
     tr = sorted(o["transmitted"], key=lambda t: t[1])
     rows = [[f"{N:,}", fact(N), f"{ss:.3f}", f"{r:.3f}", lab(r)] for N, r, ss in tr]
-    o158 = e1[(158, 20)]
-    ncl = lambda tt: sum(1 for t in tt if t[1] < 0.99)  # noqa: E731
     m2310 = sum(1 for t in tr if t[0] % 2310 == 0)
     m210 = sum(1 for t in tr if t[0] % 210 == 0)
     mult = (f"All {len(tr)} are multiples of 210 = 2·3·5·7, {m2310} of them of 2310 = 2·3·5·7·11." if m210 == len(tr)
             else f"{m210} of the {len(tr)} are multiples of 210 = 2·3·5·7 and {m2310} of 2310 = 2·3·5·7·11.")
     pr = o["pm_ratio_targets"].astype(float)
-    nontr = float(pr[pr >= 1.0].min())
+    ss2t = o["SS2_targets"].astype(float)
+    ns0 = X // 2 + (X // 2) % 2
+    n_cl, n_lo, n_hi = int(np.sum(pr < 0.99)), int(np.sum((pr >= 0.99) & (pr < 1))), int(np.sum((pr >= 1) & (pr <= 1.01)))
+    nfail = float(pr[pr > 1.01].min())
     sc = res["e5_scaling"]
+    # (158,20) is the scaling run at X = 10^6, c = 20 (same grid, same arcs): its 'near' list has every ratio < 1.01
+    r158 = next(r for r in sc if r["X"] == X and r["c"] == 20)
+    near158 = sorted(r158["near"], key=lambda t: t[1])
+    c158 = [t for t in near158 if t[1] < 0.99]
+    u158 = [t for t in near158 if t[1] >= 0.99]
+    top = np.argsort(-ss2t)[:4]
     srows = []
     for Xs in sorted({r["X"] for r in sc}):
         cells = [f"{Xs:,}"]
         for c in (10, 20):
             r = next(r for r in sc if r["X"] == Xs and r["c"] == c)
-            und = r["n_transmitted"] - r["n_closes"]
-            cells += [f"{r['Q']}", f"{r['n_closes']}" + (f" (+{und})" if und else "")
-                      + f" / {r['n_targets']:,} ({100 * r['n_transmitted'] / r['n_targets']:.2g}%)", f"{r['need']:.2f}"]
+            und = sum(1 for _, x in r["near"] if x >= 0.99)
+            cells += [f"{r['Q']}", f"{r['n_closes']}" + (f" (+{und})" if und else "") + f" / {r['n_targets']:,}",
+                      f"{100 * r['n_transmitted'] / r['n_targets']:.2g}%", f"{r['need']:.2f}"]
         cells.append(f"{next(r['max_SS2'] for r in sc if r['X'] == Xs):.2f}")
         srows.append(cells)
     a = e1[(150, 20)]
-    nX = SS2_product(res["X"])
+    nX = SS2_product(X)
     p1, p2 = 9_699_690, 223_092_870
     first = next(r for r in sc if r["c"] == 10 and r["X"] == min(x["X"] for x in sc))
     last = next(r for r in sc if r["c"] == 10 and r["X"] == max(x["X"] for x in sc))
     minpm_grid = min(e1[p]["pm_ratio_min"] for p in res["pairs"] if p not in ((158, 20), (223, 10)))
     slope = (last["need"] - first["need"]) / math.log(last["X"] / first["X"])
     meas = float(np.mean([r["meas"] for r in sc if r["c"] == 10]))
+    frac = lambda r: 100 * r["n_transmitted"] / r["n_targets"]  # noqa: E731
     return f"""## 3. E5 — single-N transmission with no relaxation
 
 P_m does not depend on N; the signal I_M(N) ≈ SS2_Q(N)·N does. Whenever I_M(N) > P_m, the plain magnitude inequality
 (the triangle inequality |I_m(N)| ≤ P_m) certifies R2(N) ≥ I_M(N) − P_m > 0 for that one N (in floating point; checked
-against the exact r2 in §0). On the grid that inequality is exact (M > 2X, a finite sum), so even a ratio just below 1
-is a valid grid certificate; but read as a statement about the continuous arcs it carries the same decision margin as
-everything else, so ratios in [0.99, 1) are counted separately as undecided. need(X) = P_m·SS2(X)/I_M(X) is the singular
-series a target near X would need to get through.
+against the exact r2 in §0). On the grid that inequality is exact (M > 2X, a finite sum), so any ratio P_m/I_M(N) < 1 is
+a valid grid certificate; read as a statement about the continuous arcs it carries the same decision margin as
+everything else: below 0.99 the target **closes**, in [0.99, 1.01] it is **undecided** (the part below 1 is still
+grid-certified), above 1.01 it fails. need(X) = P_m·SS2(X)/I_M(X) is the singular series a target near X would need to get
+through.
 
 At X = 10^6 no grid pair transmits anything (closest: P_m/I_M(N) = {minpm_grid:.3f}). At the two Q_max pairs the arcs
-cover more of the circle and the wall drops below the signal of the most composite targets. At (158,20)
-**{ncl(o158['transmitted'])}** target closes and {len(o158['transmitted']) - ncl(o158['transmitted'])} more are undecided
-({", ".join(f"{t[0]:,}: {t[1]:.3f}" for t in sorted(o158['transmitted'], key=lambda t: t[1]))}); at (223,10)
-**{ncl(tr)}** close and {len(tr) - ncl(tr)} more are undecided. {mult} The closest target with ratio ≥ 1 at (223,10) has
-P_m/I_M(N) = {nontr:.3f}. For N = 10^6
-itself (SS2 = {nX:.2f}) the ratio is {float(a['pm_ratio_targets'][-1]):.2f} at (150,20) and {float(pr[-1]):.2f} at
-(223,10).
+cover more of the circle and the wall drops below the signal of smooth targets close to X — I_M(N) ≈ SS2(N)·N needs
+both: the targets with the largest singular series are too small and still fail at (223,10)
+({", ".join(f"{ns0 + 2 * j:,}: SS2 {ss2t[j]:.2f}, ratio {pr[j]:.3f}" for j in top)}). At (158,20) **{len(c158)}**
+target closes ({", ".join(f"{t[0]:,}: {t[1]:.3f}" for t in c158)}) and {len(u158)} are undecided
+({", ".join(f"{t[0]:,}: {t[1]:.3f}" for t in u158)}). At (223,10) **{n_cl}** close and {n_lo + n_hi} are undecided
+({n_lo} with ratio in [0.99, 1), still grid-certified, and {n_hi} in [1, 1.01]); the closest failing target has
+P_m/I_M(N) = {nfail:.3f}. {mult} For N = 10^6 itself (SS2 = {nX:.2f}) the ratio is
+{float(a['pm_ratio_targets'][-1]):.2f} at (150,20) and {float(pr[-1]):.2f} at (223,10).
 
 Targets with P_m < I_M(N) at (223,10), best margin first:
 
 {_table(["N", "factorisation", "SS2(N)", "P_m / I_M(N)", "verdict"], rows)}
 
-**Scaling.** The same experiment for each cached S_X, arcs (Q_max(X, c), c), targets even N in [X/2, X]. "Transmitted"
-counts the targets that close (ratio < 0.99), with the undecided ones (0.99 ≤ ratio < 1) in brackets; the percentage is
-of all targets with ratio < 1:
+**Scaling.** The same experiment for each cached S_X, arcs (Q_max(X, c), c), targets even N in [X/2, X]. "closes" counts
+the targets with ratio < 0.99, with the undecided ones (0.99–1.01) in brackets; "P_m < I_M" is the share of targets with
+a grid certificate (ratio < 1):
 
-{_table(["X", "Q (c=10)", "transmitted (c=10)", "need (c=10)", "Q (c=20)", "transmitted (c=20)", "need (c=20)", "max SS2 on 𝒩_X"], srows)}
+{_table(["X", "Q (c=10)", "closes (c=10)", "P_m < I_M (c=10)", "need (c=10)", "Q (c=20)", "closes (c=20)", "P_m < I_M (c=20)", "need (c=20)", "max SS2 on 𝒩_X"], srows)}
 
-**Reading.** The transmitted fraction falls at every tabulated X, from
-{100 * first['n_transmitted'] / first['n_targets']:.1f}% at X = {first['X']:,} to
-{100 * last['n_transmitted'] / last['n_targets']:.4f}% at X = {last['X']:,} (c = 10). need(X) rises at every step, by
-{last['need'] - first['need']:.2f} across the table, i.e. about {slope:.2f} per unit of ln X between its end points (a
-difference, not a fit). The no-fit heuristic of results.md §5, P_m/R2 ≈ (log N − log Q − 2.33)/SS2 with
-Q = Q_max ≈ √(N/2c), would give ½ per unit of ln X; it overshoots for wide arcs, which at Q_max cover about
-{100 * meas:.0f}% of the circle and swallow that share of the background (½·(1 − |M|) ≈ {0.5 * (1 - meas):.2f}). The
-largest singular series available below X grows only like log log X (Mertens' theorem, at primorial-type N; e.g.
-SS2 = {SS2_product(p1):.2f} at {p1:,} and {SS2_product(p2):.2f} at {p2:,}). We do not extrapolate where the two curves
-part for good. This corrects the premise that nothing gets through at X = 10^6, and shows why it is not a route to
-Goldbach: at every tabulated X it works only for a small and shrinking fraction of very smooth N, with arcs covering
-about {100 * o['meas']:.0f}% of the circle and I_M computed from the true S rather than a provable model.
+**Reading.** The share of targets with P_m < I_M(N) falls at every tabulated X, from {frac(first):.1f}% at
+X = {first['X']:,} to {frac(last):.4f}% at X = {last['X']:,} (c = 10); the number that close (ratio < 0.99) falls from
+{first['n_closes']} to {last['n_closes']}. need(X) rises at every step, by {last['need'] - first['need']:.2f} across the
+table, i.e. about {slope:.2f} per unit of ln X between its end points (a difference, not a fit). The no-fit heuristic of
+results.md §5, P_m/R2 ≈ (log N − log Q − 2.33)/SS2 with Q = Q_max ≈ √(N/2c), would give ½ per unit of ln X; it
+overshoots for wide arcs, which at Q_max cover about {100 * meas:.0f}% of the circle and swallow that share of the
+background (½·(1 − |M|) ≈ {0.5 * (1 - meas):.2f}). The largest singular series available below X grows only like
+log log X (Mertens' theorem, at primorial-type N; e.g. SS2 = {SS2_product(p1):.2f} at {p1:,} and {SS2_product(p2):.2f}
+at {p2:,}). We do not extrapolate where the two curves part for good. This corrects the premise that nothing gets through
+at X = 10^6, and shows why it is not a route to Goldbach: at every tabulated X it works only for a small and shrinking
+fraction of very smooth N, with arcs covering about {100 * o['meas']:.0f}% of the circle and I_M computed from the true S
+rather than a provable model.
 """
+
+
+def joint_sentence(pairs, out) -> str:
+    """'closes with one power of 2 at every Q >= 20 and at (10,10), (10,20), and with two at ...' from the joint K*."""
+    k1 = [p for p in pairs if out[p]["joint"] == 1]
+    k2 = [p for p in pairs if out[p]["joint"] == 2]
+    k3 = [p for p in pairs if out[p]["joint"] is None or out[p]["joint"] >= 3]
+    if k1 and all(out[p]["joint"] == 1 for p in pairs if p[0] >= 20):
+        lo = [pair(p) for p in k1 if p[0] < 20]
+        s1 = "at every Q ≥ 20" + (" and at " + ", ".join(lo) if lo else "")
+    else:
+        s1 = "at " + (", ".join(pair(p) for p in k1) or "no pair")
+    s = "closes with **one** power of 2 " + s1
+    if k2:
+        s += ", and with two at " + ", ".join(pair(p) for p in k2)
+    if k3:
+        s += "; " + ", ".join(pair(p) for p in k3) + " need more"
+    return s
 
 
 def sec_e2(res) -> tuple[str, dict]:
@@ -373,10 +405,8 @@ def sec_e2(res) -> tuple[str, dict]:
     th = a["theorem"]
     lam = {C: th[C]["split"][out[(150, 20)]["split"][C]][1] for C in (1, 2, 4) if out[(150, 20)]["split"][C] is not None}
     pp = [(a["joint_ratio"][K + 1] / a["joint_ratio"][K]) for K in range(0, 14)]
-    ceil = [a["sup_G"] / (a["I_MK"][K + 1] / a["I_MK"][K]) for K in range(1, 14)]
-    k1 = [pair(p) for p in res["pairs"] if out[p]["joint"] == 1]
-    k2 = [pair(p) for p in res["pairs"] if out[p]["joint"] == 2]
-    qge20 = all(out[p]["joint"] == 1 for p in res["pairs"] if p[0] >= 20)
+    ceil = [a["sup_G"] / (a["I_MK"][K + 1] / a["I_MK"][K]) for K in range(0, 14)]
+    sent = joint_sentence(res["pairs"], out)
     I2 = a["I_MK"][2]
     sup_s = b["sup_ratio"][14]
     txt = f"""## 4. E2 — add K powers of 2 (Linnik's problem)
@@ -414,8 +444,9 @@ Diagnostics at (150,20):
 * the Rayleigh prediction P_m·Γ(1+K/2)·L^(K/2)/I_M,K (B_K ≈ P_m·E|G|^K with E|G|^K ≈ Γ(1+K/2)·L^(K/2)) gives {", ".join(f"{a['rayleigh_ratio'][K]:.3f}" for K in (1, 2, 3, 4))}
   for K = 1–4, against measured {", ".join(f"{a['joint_ratio'][K]:.3f}" for K in (1, 2, 3, 4))};
 * the cost per extra power, (B_(K+1)/B_K)/(I_M,K+1/I_M,K), is {", ".join(f"{v:.2f}" for v in pp[:6])} for K = 0…5 and
-  still rising at K = 13 ({pp[13]:.2f}); its ceiling is sup_m|G|/(I_M,K+1/I_M,K) = {min(ceil):.2f}–{max(ceil):.2f} here (not
-  sup_m|G|/L = {a['sup_G'] / L:.3f}, because I_M,K+1/I_M,K ≈ L·ρ_(K+1)/ρ_K is below L);
+  still rising at K = 13 ({pp[13]:.2f}); its ceiling is sup_m|G|/(I_M,K+1/I_M,K) = {ceil[0]:.2f} at K = 0 (where
+  I_M,1/I_M,0 ≈ L·ρ_1 is above L, ρ_1 = {e2['rho'][1]:.2f}) and {min(ceil[1:]):.2f}–{max(ceil[1:]):.2f} for K ≥ 1 (not
+  sup_m|G|/L = {a['sup_G'] / L:.3f}, because for K ≥ 1, I_M,K+1/I_M,K ≈ L·ρ_(K+1)/ρ_K is below L);
 * inputs of the theorem-shaped bound: L·ΣΛ²/I_M,2 = {L * res['L2'] / I2:.3f}, OD/I_M,2 = {e2['OD'] / I2:.3f}; optimal
   λ = {", ".join(f"{lam[C]:.2f} (C = {C})" for C in lam)};
 * meas(E_λ ∩ m) = {", ".join(f"{_e(v, 1)} (λ = {l})" for l, v in a['measE'].items())};
@@ -427,9 +458,7 @@ Diagnostics at (150,20):
   {a['joint_ratio'][1]:.3f} for powers of 2; {np.mean(sp[(20, 10)]):.3f} (max {np.max(sp[(20, 10)]):.3f}) at (20,10)
   against {b['joint_ratio'][1]:.3f}.
 
-**Reading.** At N = 10^6 the magnitude inequality closes with **one** power of 2 at
-{"every Q ≥ 20 and at " if qge20 else ""}{", ".join(p for p in k1 if int(p[1:].split(",")[0]) < 20) if qge20 else ", ".join(k1)}
-(joint bound), and with two at {", ".join(k2)}. The
+**Reading.** At N = 10^6 the magnitude inequality (joint bound) {sent}. The
 sparse control shows this is generic averaging over 19 targets of the right sizes, not something special about powers of
 2. In the Rayleigh model the K = 1 ratio scales like (P_m/R2)/√L, i.e. like √(log N), so K = 1 is a finite-N phenomenon.
 Replacing exact quantities by what proofs can use moves K\\* to {kstr(out[(150, 20)]['split'][1])} /
@@ -536,6 +565,20 @@ principle. The parity barrier is why the sieve stops at P_2.
     return txt, out
 
 
+def ripple_levels(res) -> dict:
+    """Levels quoted for Fig X4(a): sharp sidelobe at the c = 5 edge, |S_eta| ripple beyond N beta = 10, noise scales."""
+    e4, X = res["e4"], res["X"]
+    Nt = res["nters"]
+    sharp_sup = e4["rows"][(150, 5)][f"B3_sharp_{Nt[0]}"] * e4["ternary"][Nt[0]]["main_sharp"] / res["L2"]
+    pf = e4["profile"]
+    nb, se = np.asarray(pf["Nbeta"]), np.asarray(pf["S_eta"])
+    from escapes import eta_hat_table
+    xi, eh = eta_hat_table(xi_max=40.0)
+    return {"sharp5": sharp_sup / res["psi"], "max10": float(se[nb >= 10].max()), "rms10": float(np.sqrt(np.mean(se[nb >= 10] ** 2))),
+            "sqrtX": math.sqrt(X) / e4["psi_eta"], "full": math.sqrt(e4["sum_w2"]) / e4["psi_eta"],
+            "leak10_15": float(eh[(xi >= 10) & (xi <= 15)].max()), "leak15": float(eh[xi > 15].max())}
+
+
 def sec_e4(res) -> str:
     e4 = res["e4"]
     e1 = res["e1"]
@@ -565,7 +608,7 @@ def sec_e4(res) -> str:
             ["binary-kernel tail outside c, sharp ≈ 1/(π²c)"] + [_e(side[c]["sharp_tail"], 1) for c in (5, 10, 20)]]
     pe = [rows[p]["P_m_over_R"] for p in res["pairs"]]
     worse = [rows[(Q, 20)][f"B3_eta_{Nt[0]}"] / rows[(Q, 20)][f"B3_sharp_{Nt[0]}"] for Q in (5, 10, 20, 50, 100, 150)]
-    noise = math.sqrt(e4["sum_w2"]) / e4["psi_eta"]
+    rr = ripple_levels(res)
     return f"""## 6. E4 — control: a smooth weight cures the arc-edge leakage, not the wall
 
 w(n) = Λ(n)η(n/X) with η(x) = exp(1 − 1/(1 − (2x−1)²)) on (0,1): a smooth compactly supported weight (standard practice;
@@ -596,9 +639,14 @@ the arc-edge sidelobe at 0/1): with η, (150,5) drops to {rows[(150, 5)][f'B3_et
 {min(worse):.2f}–{max(worse):.2f}× worse at X − 1 — the geometric factor {ter[Nt[0]]['geom_factor']:.3f} times small
 differences in the sups and in Σw² against ΣΛ² — so (50,·) fails with η ({rows[(50, 10)][f'B3_eta_{Nt[0]}']:.3f}) where
 sharp (50,10) closes. Moving N′ to 1.5X helps both weights through the geometry of the singular integral and is not
-credited to smoothing. The window's sidelobes are suppressed, not removed: at the c = 5 edge |η̂| is about 1% of the peak.
-The ripple of |S_η| in Fig X4(a) (0.1–1% of the peak) is mostly the primes' own fluctuation, of size
-√Σw²/ψ_η = {noise:.1e}, not window leakage (|η̂|/η̂(0) < 1.4e-3 beyond ξ = 10). The binary P_m/R_η stays at
+credited to smoothing. The window's sidelobes are suppressed, not removed: just past the c = 5 edge the largest is
+{100 * side[5]['max_sidelobe']:.1f}% of the peak, against {100 * rr['sharp5']:.1f}% for the sharp cutoff (its sup at
+(150,5), which sets the 1.007 plateau; 1/(5π) = 6.4% is only the envelope). Below Nβ ≈ 10 the ripple of |S_η| in
+Fig X4(a) is that η sidelobe itself. Beyond Nβ ≈ 10 it is at most {100 * rr['max10']:.1f}% of the peak (rms
+{_e(rr['rms10'], 1)}), mostly the primes' own fluctuation: comparable to √X/ψ_η = {_e(rr['sqrtX'], 1)}, the size square-root
+cancellation would give, and below the full-circle rms √Σw²/ψ_η = {_e(rr['full'], 1)}. Window leakage
+(|η̂|/η̂(0) ≤ {_e(rr['leak10_15'], 1)} on Nβ ∈ [10, 15], ≤ {_e(rr['leak15'], 1)} beyond) is comparable to it only up to
+Nβ ≈ 15. The binary P_m/R_η stays at
 {min(pe):.2f}–{max(pe):.2f}: the main term and Σw² both scale with ∫η², so the decoherent power is unchanged. Leakage is
 an edge effect; the wall is a power budget.
 """
@@ -623,7 +671,7 @@ def captions(res, e0x, e1x, e2x, e3x) -> str:
     m210 = sum(1 for t in tr if t[0] % 210 == 0)
     ncl = sum(1 for t in tr if t[1] < 0.99)
     pp = [r["joint_ratio"][K + 1] / r["joint_ratio"][K] for K in range(14)]
-    noise = math.sqrt(e4["sum_w2"]) / e4["psi_eta"]
+    rr = ripple_levels(res)
     return f"""## Figures (captions in phasor language)
 
 ![Fig X0](figures/fig_X0_obstacle.png)
@@ -656,9 +704,9 @@ does not know which reference will demodulate it. The signal does: at a spike a/
 e(−aN/q), and summed over the φ(q) spikes with denominator q that is the Ramanujan sum c_q(N) — φ(q) when q | N, −1 when
 q is a prime not dividing N. So SS2(N) counts how many locked spikes the reference catches in phase. Multiples of
 2·3·5·7·11 collect about 3.6× the signal of N = 2p against the same wall. At (223,10), {len(tr)} targets have
-P_m < I_M(N) ({ncl} below the 0.99 margin); {m210} of them are multiples of 210 and {m2310} of 2310. Panel (b): the wall
-need(X) rises at every step ({", ".join(f"{s['need']:.2f}" for s in sc)}) while the largest available SS2 rises slowly,
-so the transmitted fraction falls at every step (labels: counts).
+P_m < I_M(N) ({ncl} close, below the 0.99 margin; the rest undecided); {m210} of them are multiples of 210 and {m2310} of
+2310. Panel (b): the wall need(X) rises at every step ({", ".join(f"{s['need']:.2f}" for s in sc)}) while the largest
+available SS2 rises slowly, so the share of targets with P_m < I_M(N) falls at every step (labels: their counts).
 
 ![Fig X2](figures/fig_X2_linnik.png)
 
@@ -677,16 +725,18 @@ the share of B_K within 60/N of those two points is {100 * r['shoulder_share'][6
 
 **Fig X3 — almost-primes.** Replace one prime by a member of a set whose oscillators lock into fewer, lower-q channels.
 z-rough numbers are the primes with the sieve stopped at z: for z ≤ 7 their spectrum is a few Dirichlet lines at j/d,
-d | 30, which the arcs swallow; as z grows the lines spread to larger q and build their own sea, and at z ≈ √X they are
+d | 30, which the arcs swallow once Q ≥ d (at (20,10) the j/30 lines of z = 7 stay on the minor arcs, hence the step in
+panel b); as z grows the lines spread to larger q and build their own sea, and at z ≈ √X they are
 the primes again. A random set of the same density never closes ({bern['rows'][(150, 20)]['joint_ratio']:.2f} at
 (150,20)): its energy is sea from the start. What closes is arithmetic concentration on the major arcs, plus density.
 
 ![Fig X4](figures/fig_X4_window.png)
 
 **Fig X4 — smooth weight (control).** Apodization tapers each oscillator's amplitude to zero at both ends of the
-observation window. It suppresses the ringing of the rectangular window (the Dirichlet sidelobes, panel a: about 1%
-instead of 6.4% of the peak at the c = 5 edge; the ripple left in |S_η|, ≈ √Σw²/ψ_η = {noise:.1e}, is the primes' own
-fluctuation) that held the ternary bound at 1.007 for c = 5 at every Q ≥ 50 (panel b). It does not change the power of the
+observation window. It suppresses the ringing of the rectangular window (the Dirichlet sidelobes, panel a:
+{100 * e4['sidelobes'][5]['max_sidelobe']:.1f}% instead of {100 * rr['sharp5']:.1f}% of the peak just past the c = 5 edge;
+beyond Nβ ≈ 10 what is left in |S_η|, rms {_e(rr['rms10'], 1)}, is mostly the primes' own fluctuation, dotted line) that
+held the ternary bound at 1.007 for c = 5 at every Q ≥ 50 (panel b). It does not change the power of the
 decoherent sea: the binary P_m/R_η stays at
 {min(v['P_m_over_R'] for v in e4['rows'].values()):.2f}–{max(v['P_m_over_R'] for v in e4['rows'].values()):.2f} over all 20
 pairs (panel c shows c = 10 and 20).
@@ -709,6 +759,7 @@ def write(res, path: Path) -> None:
     b1 = e1[(150, 20)]
     tr = e1[(223, 10)]["transmitted"]
     best_tr = min(t[1] for t in tr)
+    pr223 = e1[(223, 10)]["pm_ratio_targets"].astype(float)
     r2 = res["e2"]["rows"][(150, 20)]
     e3 = {s["name"]: s for s in res["e3"]}
     bern = next(e3[nm] for nm in e3 if nm.startswith("Bernoulli") and "Omega<=2" in nm)
@@ -725,15 +776,16 @@ def write(res, path: Path) -> None:
          f"at (150,20) closes for all but ≤ {100 * b1['bound_4th'] / n:.2f}% (textbook form {100 * b1['bound_textbook'] / n:.1f}%)",
          "van der Corput, Chudakov, Estermann 1937–38"],
         ["E5 transmission", "does any single N get through with no relaxation?",
-         f"at (223,10) {sum(1 for t in tr if t[1] < 0.99)} N close and {sum(1 for t in tr if t[1] >= 0.99)} are undecided; "
-         f"best P_m/I_M(N) = {best_tr:.3f}",
+         f"at (223,10) {int(np.sum(pr223 < 0.99))} N close and {int(np.sum((pr223 >= 0.99) & (pr223 <= 1.01)))} are "
+         f"undecided; best P_m/I_M(N) = {best_tr:.3f}",
          f"closes for a few N with SS2 ≈ 5; the fraction with P_m < I_M falls from "
          f"{100 * sc10[0]['n_transmitted'] / sc10[0]['n_targets']:.1f}% at 10^4 to "
          f"{100 * sc10[-1]['n_transmitted'] / sc10[-1]['n_targets']:.4f}% at 2·10^6", "finite checks to 4·10^18"],
         ["E2 Linnik", "N = p + p′ + 2^(k₁) + … + 2^(k_K)",
          f"joint B_1/I_M,1 = {r2['joint_ratio'][1]:.3f}; theorem-shaped K\\* = "
          + " / ".join(kstr(e2x[(150, 20)]['split'][C]) for C in (1, 2, 4)),
-         "closes at K = 1 for every Q ≥ 20 (joint bound; K = 2 at Q = 5) — generic averaging",
+         joint_sentence(res["pairs"], e2x).replace("**", "").replace("closes with one power of 2", "closes with K = 1")
+         + " (joint bound) — generic averaging",
          "Linnik 1951/53; best published K = 8"],
         ["E3 almost-primes", "N = p + m with Ω(m) ≤ r",
          f"Ω ≤ 2: joint {e3['Omega<=2']['rows'][(150, 20)]['joint_ratio']:.3f} at (150,20); random set of equal density "
@@ -742,7 +794,7 @@ def write(res, path: Path) -> None:
         ["E4 smooth weight", "does smoothing move the wall? (control)",
          f"binary P_m/R_η = {min(v['P_m_over_R'] for v in e4['rows'].values()):.2f}–"
          f"{max(v['P_m_over_R'] for v in e4['rows'].values()):.2f}",
-         "binary wall unchanged; ternary c = 5 plateau removed (sidelobes suppressed to ≈ 1%)", "standard practice"],
+         "binary wall unchanged; ternary c = 5 plateau removed (sidelobes suppressed, not removed)", "standard practice"],
     ]
     txt = f"""# Relaxations under which the magnitude inequality closes at N = 10^6
 
@@ -762,7 +814,9 @@ R(N) = I_M + I_m. A bound on |I_m| that uses magnitudes only is computed and div
 are Riemann sums, each ratio carries a decision margin: **closes** < 0.99, **undecided** 0.99–1.01, **fails** > 1.01.
 "Closes" means the method's inequality alone gives R(N) > 0 for that target, numerically, at this X. The grid-sum
 inequalities themselves are exact (M > 2X, finite sums), so a ratio just below 1 is still a valid statement about the
-grid; the margin is for reading it as the continuous circle method, of which the grid sums are Riemann sums. Every K\\*,
+grid; the margin is for reading it as the continuous circle method, of which the grid sums are Riemann sums. (E4's
+ternary ratios B3/main are taken against the asymptotic main term, not the grid major part, so they are not grid
+certificates.) Every K\\*,
 r\\* and z\\* below is a finite-X statistic of this computation, not comparable to a constant in a theorem.
 
 ## Headline
@@ -786,8 +840,8 @@ r\\* and z\\* below is a finite-X statistic of this computation, not comparable 
 * That each classical relaxation turns the binary problem into one where a magnitude inequality closes at this X, and
   where the slack comes from: a shared energy budget across targets (E1), a second bank of oscillators that is mostly
   decoherent on the minor arcs (E2), a second family whose energy sits on the major arcs (E3).
-* That a few very smooth N get through with no relaxation at all, and that the fraction that does falls at every
-  tabulated X, from {100 * sc10[0]['n_transmitted'] / sc10[0]['n_targets']:.1f}% at 10^4 to
+* That a few very smooth N get through with no relaxation at all, and that the share of targets with P_m < I_M(N)
+  falls at every tabulated X, from {100 * sc10[0]['n_transmitted'] / sc10[0]['n_targets']:.1f}% at 10^4 to
   {100 * sc10[-1]['n_transmitted'] / sc10[-1]['n_targets']:.4f}% at 2·10^6 (E5).
 * That a smooth weight suppresses the arc-edge leakage of the ternary bound (removing its c = 5 plateau) but leaves the
   binary wall where it was (E4).
@@ -800,8 +854,10 @@ r\\* and z\\* below is a finite-X statistic of this computation, not comparable 
   from the true S, not from a provable major-arc model.
 * That any K\\*, r\\* or z\\* matches a theorem: the theorems pay for major-arc and asymptotic losses that one X cannot show,
   and Rényi's and Chen's theorems are sieve theorems that do not use this inequality at all. r\\* = 2 is not Chen's 2.
-* Trends: no fits are made. Measured quantities are shown at each X; the growth rates quoted (log log X for the largest
-  singular series, ½·log N for the heuristic wall, the density of {{Ω ≤ r}}) are theorems or heuristics, labelled as such.
+* Trends: no fits are made. Measured quantities are shown at each X; the growth rates quoted are theorems or heuristics,
+  labelled as such: log log X for the largest singular series (Mertens), ½(1 − |M|)·log N ≈ 0.35·log N for the heuristic
+  wall at Q_max (½·log N if the arcs' share of the background is ignored), √(log N) for the K = 1 Linnik ratio (Rayleigh
+  model), and the density of {{Ω ≤ r}} (Landau).
 
 ## References
 
