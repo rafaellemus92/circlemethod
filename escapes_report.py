@@ -276,9 +276,11 @@ def sec_e5(res) -> str:
     rows = [[f"{N:,}", fact(N), f"{ss:.3f}", f"{r:.3f}", lab(r)] for N, r, ss in tr]
     m2310 = sum(1 for t in tr if t[0] % 2310 == 0)
     m210 = sum(1 for t in tr if t[0] % 210 == 0)
-    mult = (f"All {len(tr)} are multiples of 210 = 2·3·5·7, {m2310} of them of 2310 = 2·3·5·7·11." if m210 == len(tr)
-            else f"{m210} of the {len(tr)} are multiples of 210 = 2·3·5·7 and {m2310} of 2310 = 2·3·5·7·11.")
     pr = o["pm_ratio_targets"].astype(float)
+    mult = (f"All {len(tr)} targets with P_m < I_M(N) (the closing ones and the undecided ones below 1) are multiples of "
+            f"210 = 2·3·5·7, {m2310} of them of 2310 = 2·3·5·7·11." if m210 == len(tr)
+            else f"Of the {len(tr)} targets with P_m < I_M(N), {m210} are multiples of 210 = 2·3·5·7 and {m2310} of "
+                 f"2310 = 2·3·5·7·11.")
     ss2t = o["SS2_targets"].astype(float)
     ns0 = X // 2 + (X // 2) % 2
     n_cl, n_lo, n_hi = int(np.sum(pr < 0.99)), int(np.sum((pr >= 0.99) & (pr < 1))), int(np.sum((pr >= 1) & (pr <= 1.01)))
@@ -603,7 +605,7 @@ def sec_e4(res) -> str:
     ter = e4["ternary"]
     side = e4["sidelobes"]
     srow = [["max_(ξ>c) |η̂(ξ)|/η̂(0)"] + [_e(side[c]["max_sidelobe"], 1) for c in (5, 10, 20)],
-            ["sharp sidelobe 1/(πc)"] + [_e(side[c]["sharp_sidelobe"], 1) for c in (5, 10, 20)],
+            ["sharp envelope 1/(πc)"] + [_e(side[c]["sharp_sidelobe"], 1) for c in (5, 10, 20)],
             ["binary-kernel tail outside c, η"] + [_e(side[c]["kernel_tail"], 1) for c in (5, 10, 20)],
             ["binary-kernel tail outside c, sharp ≈ 1/(π²c)"] + [_e(side[c]["sharp_tail"], 1) for c in (5, 10, 20)]]
     pe = [rows[p]["P_m_over_R"] for p in res["pairs"]]
@@ -670,6 +672,8 @@ def captions(res, e0x, e1x, e2x, e3x) -> str:
     m2310 = sum(1 for t in tr if t[0] % 2310 == 0)
     m210 = sum(1 for t in tr if t[0] % 210 == 0)
     ncl = sum(1 for t in tr if t[1] < 0.99)
+    pr223 = e1[(223, 10)]["pm_ratio_targets"].astype(float)
+    n_hi = int(np.sum((pr223 >= 1) & (pr223 <= 1.01)))
     pp = [r["joint_ratio"][K + 1] / r["joint_ratio"][K] for K in range(14)]
     rr = ripple_levels(res)
     return f"""## Figures (captions in phasor language)
@@ -704,8 +708,8 @@ does not know which reference will demodulate it. The signal does: at a spike a/
 e(−aN/q), and summed over the φ(q) spikes with denominator q that is the Ramanujan sum c_q(N) — φ(q) when q | N, −1 when
 q is a prime not dividing N. So SS2(N) counts how many locked spikes the reference catches in phase. Multiples of
 2·3·5·7·11 collect about 3.6× the signal of N = 2p against the same wall. At (223,10), {len(tr)} targets have
-P_m < I_M(N) ({ncl} close, below the 0.99 margin; the rest undecided); {m210} of them are multiples of 210 and {m2310} of
-2310. Panel (b): the wall need(X) rises at every step ({", ".join(f"{s['need']:.2f}" for s in sc)}) while the largest
+P_m < I_M(N) ({ncl} close, below the 0.99 margin; the other {len(tr) - ncl} are undecided, as are {n_hi} more with
+ratio in [1, 1.01]); {m210} of the {len(tr)} are multiples of 210 and {m2310} of 2310. Panel (b): the wall need(X) rises at every step ({", ".join(f"{s['need']:.2f}" for s in sc)}) while the largest
 available SS2 rises slowly, so the share of targets with P_m < I_M(N) falls at every step (labels: their counts).
 
 ![Fig X2](figures/fig_X2_linnik.png)

@@ -212,7 +212,7 @@ both: the targets with the largest singular series are too small and still fail 
 target closes (990,990: 0.968) and 3 are undecided
 (960,960: 0.997, 981,750: 0.999, 930,930: 1.009). At (223,10) **16** close and 11 are undecided
 (5 with ratio in [0.99, 1), still grid-certified, and 6 in [1, 1.01]); the closest failing target has
-P_m/I_M(N) = 1.011. All 21 are multiples of 210 = 2·3·5·7, 16 of them of 2310 = 2·3·5·7·11. For N = 10^6 itself (SS2 = 1.76) the ratio is
+P_m/I_M(N) = 1.011. All 21 targets with P_m < I_M(N) (the closing ones and the undecided ones below 1) are multiples of 210 = 2·3·5·7, 16 of them of 2310 = 2·3·5·7·11. For N = 10^6 itself (SS2 = 1.76) the ratio is
 2.90 at (150,20) and 2.65 at (223,10).
 
 Targets with P_m < I_M(N) at (223,10), best margin first:
@@ -520,7 +520,7 @@ per N′; sharp for c = 5 / 10 / 20:
 |  | c = 5 | c = 10 | c = 20 |
 |:---|---:|---:|---:|
 | max_(ξ>c) \|η̂(ξ)\|/η̂(0) | 9.0e-3 | 1.4e-3 | 8.1e-5 |
-| sharp sidelobe 1/(πc) | 6.4e-2 | 3.2e-2 | 1.6e-2 |
+| sharp envelope 1/(πc) | 6.4e-2 | 3.2e-2 | 1.6e-2 |
 | binary-kernel tail outside c, η | 1.1e-4 | 2.7e-6 | 1.2e-8 |
 | binary-kernel tail outside c, sharp ≈ 1/(π²c) | 2.0e-2 | 1.0e-2 | 5.1e-3 |
 
@@ -573,8 +573,8 @@ does not know which reference will demodulate it. The signal does: at a spike a/
 e(−aN/q), and summed over the φ(q) spikes with denominator q that is the Ramanujan sum c_q(N) — φ(q) when q | N, −1 when
 q is a prime not dividing N. So SS2(N) counts how many locked spikes the reference catches in phase. Multiples of
 2·3·5·7·11 collect about 3.6× the signal of N = 2p against the same wall. At (223,10), 21 targets have
-P_m < I_M(N) (16 close, below the 0.99 margin; the rest undecided); 21 of them are multiples of 210 and 16 of
-2310. Panel (b): the wall need(X) rises at every step (2.96, 3.33, 3.77, 4.19, 4.67, 4.90) while the largest
+P_m < I_M(N) (16 close, below the 0.99 margin; the other 5 are undecided, as are 6 more with
+ratio in [1, 1.01]); 21 of the 21 are multiples of 210 and 16 of 2310. Panel (b): the wall need(X) rises at every step (2.96, 3.33, 3.77, 4.19, 4.67, 4.90) while the largest
 available SS2 rises slowly, so the share of targets with P_m < I_M(N) falls at every step (labels: their counts).
 
 ![Fig X2](figures/fig_X2_linnik.png)

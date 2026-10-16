@@ -241,3 +241,47 @@ def test_report_decision_margin():
     assert rep.first_close([1.2, 0.995, 0.98, 0.5]) == 2
     assert rep.first_close([0.5, 0.98], start=1) == 1 and rep.first_close([1.0, 1.1]) is None
     assert rep.r3(0.995).endswith("(undecided)") and rep.r3(0.0072) == "0.0072"
+
+
+def test_e5_truncated(small):
+    from sieve import von_mangoldt
+
+    ctx = small["ctx"]
+    N, c = 5000, 10
+    t = es.e5_truncated(None, N, c, ctx.mu, ctx.phi, None)
+    Mt = 2**15                                                    # smallest power of 2 >= 4N
+    assert t["M"] == Mt and t["Q"] == math.isqrt((N - 1) // (2 * c))
+    lam = von_mangoldt(N)
+    S = S_grid(lam, Mt)
+    A = es.MajorArcs(N, Mt, t["Q"], c, ctx.mu, ctx.phi)
+    minor = np.flatnonzero(~A.mask())
+    Pm = float(np.sum(np.abs(S[minor]) ** 2)) / Mt
+    IM = float(np.sum(S[A.idx] ** 2 * e_minus(N, A.idx, Mt)).real) / Mt
+    Im = float(np.sum(S[minor] ** 2 * e_minus(N, minor, Mt)).real) / Mt
+    assert t["P_m"] == pytest.approx(Pm, rel=1e-12) and t["I_M"] == pytest.approx(IM, rel=1e-9)
+    assert IM + Im == pytest.approx(autoconvolve(lam)[N], rel=1e-9)
+    assert t["ratio"] == pytest.approx(t["P_m"] / t["I_M"], rel=1e-12)
+
+
+def test_e5_certificate_uses_the_right_index(small):
+    """A spike in r2 exactly at the transmitted N must certify them; an off-by-one would miss it."""
+    ctx = small["ctx"]
+    SS2e = SS2_even_array(X)
+    o = es.e5_scaling(X, ctx.S.copy(), ctx.lam, ctx.mu, ctx.phi, SS2e, 10)
+    tr = np.array(o["transmitted"])
+    lam_d = np.zeros_like(ctx.lam)
+    lam_d[tr // 2] = 1e4                                          # r2_d(N) >= 1e8 at every transmitted N
+    assert es.e5_scaling(X, ctx.S.copy(), lam_d, ctx.mu, ctx.phi, SS2e, 10)["certificates_ok"]
+
+
+def test_joint_sentence():
+    import escapes_report as rep
+
+    pairs = [(5, 5), (10, 10), (20, 10), (150, 20)]
+    mk = lambda ks: {p: {"joint": k} for p, k in zip(pairs, ks)}  # noqa: E731
+    s = rep.joint_sentence(pairs, mk([2, 1, 1, 1]))
+    assert s == "closes with **one** power of 2 at every Q ≥ 20 and at (10,10), and with two at (5,5)"
+    assert rep.joint_sentence(pairs, mk([2, 2, 1, 1])).endswith("at every Q ≥ 20, and with two at (5,5), (10,10)")
+    assert rep.joint_sentence(pairs, mk([None, 3, 2, 1])) == ("closes with **one** power of 2 at (150,20), and with two "
+                                                              "at (20,10); (5,5), (10,10) need more")
+    assert "no pair" in rep.joint_sentence(pairs, mk([2, 2, 2, 2]))
