@@ -62,6 +62,8 @@ the tall near-rational spikes (Q large) and push the arc-edge sidelobes down (c 
 | `figures_fractals.py`, `fractals_report.py` | figures M1–M6 and the `fractals.md` writer (every number in it is read from the pickle) |
 | `tests/test_fractals.py` | pytest on X = 10^4: estimators on uniform and cascade measures, Farey count and staircase, sinc integrals, all-a FFT, Beckmann vs Rice, FG and q*, collapse, spike CCDF asymptote, Hill, sup prediction, structure functions, triangular envelope, spectral identity, surrogate identities, uncertainty products, bulb centres, size law, mediant counts |
 | `fractals.md` | the fractal-lens results: certificates, one section per block, the physics dictionary, literal versus analogy, synthesis, captions, references |
+| `compartments.py`, `run_compartments.py`, `compartments_report.py` | the body-water lens B1–B3 (below): windows as dilution indicators with exact capture, the three-indicator solve, the congruence model of spike heights for any set given by residue classes; writes `cache/compartments.pkl`, `figures/fig_W1_compartments.png`, `compartments.md` |
+| `tests/test_compartments.py` | pytest on X = 10^4: congruence model = Ramanujan sums (and the restricted and integer cases), window membership and capture, window energy = capture × spike, the three-indicator solve, predictions and limits |
 
 ## Running
 
@@ -76,6 +78,8 @@ python run_escapes.py              # escape routes E0–E5: ~4 min, peak RSS ~1.
 python run_escapes.py --report     # redraw figures/fig_X*.png and escapes.md from cache/escapes.pkl
 python run_fractals.py             # fractal lens M1–M5, A1–A3: ~12 min, peak RSS ~1.6 GB; needs run_all.py's and run_escapes.py's caches
 python run_fractals.py --report    # redraw figures/fig_M*.png and fractals.md from cache/fractals.pkl
+python run_compartments.py         # body-water lens B1–B3: ~10 s; needs run_all.py's caches
+python run_compartments.py --report
 ```
 
 `cache/` holds S on each grid (`S_<set>_N<N>_M<M>.npz`, 134 MB for M = 2^23) and the pickled results.
@@ -158,3 +162,21 @@ checked against a surrogate made of the singular-series spikes q ≤ 1000 plus a
   and for spikes in 56/140.
 * A physics dictionary sorts the vocabulary (phasors, conservation and leakage, uncertainty principle, diffraction:
   literal; equipartition: partly; spin, time, fluids: not).
+
+## The body-water lens: the energy of S as compartments (`compartments.md`)
+
+Physiology measures total body water and its compartments by indicator dilution (V = I/C), with nested indicators
+(heavy water for all water, bromide or inulin for extracellular water, Evans blue for plasma) and corrections for
+tracers that stray outside their space. `compartments.md` measures the energy of S the same way, with Parseval as the
+conserved total and windows around fractions as the indicators:
+
+* **B1.** At X = 10^6: atoms (q = 1, 2) 15.6%, forest (3 ≤ q ≤ q*) 43.6%, sea 40.8%, matching the no-fit spike model
+  (2/L_N and Σμ²/φ / L_N) to 0.3%. That match needs two corrections. Each window needs its exact capture (0.755 or 0.803,
+  not the average 0.774). And the sea is not evenly mixed: near a/q it is thinner, at the level of the variance of
+  primes in progressions mod q (X·FG(q)), than its circle average.
+* **B2.** From X = 10^4 to 2·10^6 the atoms fall like 2/(ln X − 1) (24.5% → 14.8%), the forest stays near 0.44 and the sea
+  grows; as X → ∞ the shares tend to 0, ½, ½. This is the counterpart of a fetus's changing body water, with the
+  difference stated: X is not time, and the coherent share falls while a fetus gains solids.
+* **B3.** "Growth aberration": with the same total weight, Cramér's model has no forest, the primes have 42–44%, and the
+  primes ≡ 1 (mod 4) have more (46%): the arithmetic of the set sets its composition, as the no-fit congruence model
+  predicts.
