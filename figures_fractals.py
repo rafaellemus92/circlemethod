@@ -299,7 +299,7 @@ def fig_M4(res, out):
         ax.plot(xl, H, color=BLUE, lw=1.3)
         ax.plot(xl[good], H[good], "o", color=BLUE, ms=4, ls="none", label="primes H₂ (solid: ≥ 500 independent increments)")
         ax.plot(xl[~good], H[~good], "o", mfc="none", mec=BLUE, ms=4, ls="none")
-        ax.plot(xl, w["drift"]["H"], color=BLUE, lw=0.6, ls=(0, (1, 1)), label="primes, drift removed")
+        ax.plot(xl, w["full"]["drift"]["H"], color=BLUE, lw=0.6, ls=(0, (1, 1)), label="primes, drift removed")
         for R, col in ((300, AQUA), (1000, ORANGE), (3000, VIOLET)):
             ax.plot(xl, res["walks"][(f"hybrid{R}",) + pr]["full"][2.0]["H"], color=col, lw=0.9, ls=(0, (4, 2)),
                     label=f"surrogate, spikes q ≤ {R}")

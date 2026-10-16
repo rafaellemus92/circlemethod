@@ -53,7 +53,7 @@ def band_stats(res, pr, key: str = "raw") -> list[dict]:
     """Primes' local H_2 against the Cramér ensemble, averaged over each band of N*lag."""
     x = xl(res)
     w = res["walks"][("primes",) + pr]
-    Hp = w["full"][2.0]["H"] if key == "raw" else w["drift"]["H"]
+    Hp = w["full"][2.0]["H"] if key == "raw" else w["full"]["drift"]["H"]
     ens = np.array([e[key] for e in res["ensemble"][pr]])
     hyb = {R: res["walks"][(f"hybrid{R}",) + pr]["full"][2.0]["H"] for R in (300, 1000, 3000)}
     out = []
@@ -560,7 +560,7 @@ def sec_m4(res) -> str:
         out.append(f"**{pair(pr)}** (n = {res['walks'][('primes',) + pr]['n']:,} minor points):\n\n" + _table(
             ["band of Nℓ", "n/ℓ", "primes H₂", "Cramér, 16 seeds", "z", "seeds ≥ primes", "verdict", "surrogate R = 300 / 1000 / 3000"], rows))
     t_bands = "\n\n".join(out)
-    drift_ch = max(float(np.max(np.abs(res["walks"][("primes",) + pr]["drift"]["H"] - res["walks"][("primes",) + pr]["full"][2.0]["H"])[
+    drift_ch = max(float(np.max(np.abs(res["walks"][("primes",) + pr]["full"]["drift"]["H"] - res["walks"][("primes",) + pr]["full"][2.0]["H"])[
         res["walks"][("primes",) + pr]["n"] / np.array(LAGS[:-1]) >= 500])) for pr in WALK)
     trows = []
     for j in range(0, 9):
