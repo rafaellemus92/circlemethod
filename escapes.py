@@ -371,7 +371,7 @@ def e1_exceptional(ctx: Context, S2: np.ndarray, a2: np.ndarray, Q: int, c: int,
     pm_ratio = Pm / IMN
     trans = np.flatnonzero(pm_ratio < 1.0)
     return {
-        "Q": Q, "c": c, "n_targets": nT, "P_m": Pm, "E4m": E4m, "full4": tot4, "sup2": sup2,
+        "Q": Q, "c": c, "n_targets": nT, "P_m": Pm, "E4m": E4m, "full4": tot4, "sup2": sup2, "meas": meas,
         "kurtosis": E4m / (Pm ** 2 / (1.0 - meas)),
         "bessel_relerr": abs(bessel - E4m) / E4m,
         "minIM": minIM, "minIM_N": int(Ns[int(np.argmin(IMN))]),
@@ -393,7 +393,7 @@ def e1_exceptional(ctx: Context, S2: np.ndarray, a2: np.ndarray, Q: int, c: int,
 
 
 def e5_truncated(lam_full_X: int, N: int, c: int, mu, phi, cache_dir) -> dict:
-    """Single-N certificate with S truncated at N itself (P_m(S_N) < P_m(S_X)), arcs Q = Qmax(N, c)."""
+    """Single-N certificate with S truncated at N itself (its own grid M >= 4N), arcs (Qmax(N, c), c) of half-width c/N."""
     from expsum import S_grid as _Sg
     from sieve import von_mangoldt
 
@@ -423,12 +423,17 @@ def e5_scaling(X: int, S: np.ndarray, lam: np.ndarray, mu, phi, SS2_even: np.nda
     Ns = even_targets(X)
     IMN = IM[Ns]
     del IM
-    trans = Ns[IMN > Pm]
+    sel = IMN > Pm
+    trans = Ns[sel]
+    ratio = Pm / IMN
+    near = np.flatnonzero(ratio < 1.01)
     r2 = autoconvolve(lam)
     return {"X": X, "Q": Q, "c": c, "P_m": Pm, "n_targets": len(Ns), "n_transmitted": int(len(trans)),
+            "n_closes": int(np.sum(ratio < 0.99)), "near": [(int(Ns[j]), float(ratio[j])) for j in near],
+            "meas": len(A.idx) / M,
             "need": Pm * SS2_even[X] / float(IMN[-1]), "max_SS2": float(SS2_even[Ns].max()),
             "transmitted": [int(t) for t in trans],
-            "certificates_ok": bool(np.all(r2[trans] > 0))}
+            "certificates_ok": bool(np.all(r2[trans] >= IMN[sel] - Pm - 1e-9 * Pm) and np.all(r2[trans] > 0))}
 
 
 # ================================================================ E2: add K powers of 2 (Linnik)
@@ -545,7 +550,7 @@ def e2_linnik(ctx: Context, S2: np.ndarray, a2: np.ndarray, pairs, Kmax: int = 1
                     best.append((vals[jj] / IMK[K], float(lambdas[jj])))
             thm[C] = {"split": best_split, "literature": best_lit, "split_exact": best_exact,
                       "no_split": [np.inf if K < 2 else supG ** (K - 2) * (L * L2 + C * OD) / IMK[K] for K in Ks]}
-        rayleigh = [(Pm / ctx.R2) * math.gamma(1 + K / 2) * L ** (-K / 2) / out["rho"][K] for K in Ks]
+        rayleigh = [Pm * math.gamma(1 + K / 2) * L ** (K / 2) / IMK[K] for K in Ks]   # B_K ~ P_m E|G|^K, over I_M,K
         out["rows"][(Q, c)] = {
             "I_MK": IMK, "B_K": BK, "joint_ratio": BK / IMK, "sup_G": supG,
             "sup_ratio": supG ** Ks * Pm / IMK,

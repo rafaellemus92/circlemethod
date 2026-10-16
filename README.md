@@ -105,23 +105,24 @@ python run_escapes.py --report     # redraw figures/fig_X*.png and escapes.md fr
 
 ## Escape routes: what gets through the wall, and what that does not mean (`escapes.md`)
 
-The main run shows the obstacle: for one N, the minor arcs carry 2.6–5.8 times more energy than the whole count, so
-any bound that sees only |S| there fails. Getting past that for every large N means proving that the minor-arc phases
+The main run shows the obstacle: at N = 10^6 the minor arcs carry 2.6–5.8 times more energy than the whole count, so
+any bound that sees only |S| there fails (as it does for a typical N; E5 below finds the rare exceptions). Getting past that for every large N means proving that the minor-arc phases
 cancel, which is the open problem; nothing here attempts it. `escapes.md` instead measures the obstacle for one N and
 tests, at the same X = 10^6, the classical relaxations under which the *magnitude* inequality does close:
 
 * **E0, the obstacle.** The 6.1 M minor-arc phasors at (150,20) form a walk 2.9× the signal long that ends 1% of the way
   out; every magnitude-only refinement is longer still. Phase-summed windows ≈ 20/N wide would suffice at this N.
 * **E1, average over N.** One energy budget Σ_N I_m(N)² = ∫_m|S|⁴ is shared by all targets, so at most 274 of the
-  250,001 even N in [X/2, X] can fail at (150,20) (5,935 with the sup form the 1937–38 proofs use); none does.
-* **E5, single-N transmission.** With no relaxation, 21 very smooth N (SS2 ≈ 5) get through at (223,10); the fraction
-  falls from 2.8% at X = 10^4 to 0.0014% at 2·10^6.
+  250,001 even N in [X/2, X] can fail at (150,20) (15,058 with the textbook sup form sup²·ΣΛ² of the 1937–38 proofs);
+  none does.
+* **E5, single-N transmission.** With no relaxation, 21 very smooth N (SS2 ≈ 5) have P_m < I_M(N) at (223,10), 16 of
+  them below the 0.99 margin; the fraction falls at every tabulated X, from 2.8% at X = 10^4 to 0.0014% at 2·10^6.
 * **E2, Linnik (add powers of 2).** One power of 2 already closes the joint magnitude bound at Q ≥ 20 — generic
   averaging, as a random-shift control shows; the substitutes proofs can use push K to 4–7 at (150,20).
 * **E3, almost-primes.** Replacing one prime by m with Ω(m) ≤ 2 closes at (150,20), Ω ≤ 3–4 elsewhere; random sets of
   the same density never close. Chen's and Rényi's theorems are sieve theorems; r = 2 here is not Chen's 2.
-* **E4, smooth weight (control).** Removes the arc-edge sidelobes that held the ternary bound at 1.007, and leaves the
-  binary wall where it was.
+* **E4, smooth weight (control).** Suppresses the arc-edge sidelobes (to ≈ 1% of the peak at the c = 5 edge, against
+  6.4% for the sharp cutoff), which removes the 1.007 plateau of the ternary bound, and leaves the binary wall where it was.
 
 Every K\*, r\* and z\* there is a finite-X statistic, with a decision margin (closes < 0.99 < undecided < 1.01 < fails),
 not a constant comparable to a theorem's.

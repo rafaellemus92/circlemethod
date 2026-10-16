@@ -181,3 +181,56 @@ def test_window_bound_monotone(small):
     assert abs(o["I_m"].real - (ctx.R2 - o["I_M"])) <= 1e-9 * ctx.R2
     for m in o["model"]:                                                   # valid bound on the harmful direction
         assert m["bound"] >= -o["I_m"].real
+
+
+def test_model_spikes_values(small):
+    """S* = (mu(q)/phi(q)) v(alpha - a/q) inside the windows |alpha - a/q| <= 1/(2 q Q'), squarefree q <= Q'; 0 elsewhere."""
+    from expsum import dirichlet
+
+    ctx = small["ctx"]
+    Qp = 30
+    Sst = es.model_spikes(X, M, Qp, ctx.mu, ctx.phi, np.ones(M, dtype=bool))
+    rng = np.random.default_rng(5)
+    for k in rng.integers(0, M, 3000):
+        hit = None
+        for q in range(1, Qp + 1):
+            if ctx.mu[q] == 0:
+                continue
+            a = int(round(k * q / M)) % q
+            num = k * q - round(k * q / M) * M                     # beta = num / (q M), nearest a/q
+            if math.gcd(a, q) == 1 and abs(num) * 2 * Qp <= M:
+                hit = (q, num)
+                break
+        if hit is None:
+            assert Sst[k] == 0
+        else:
+            q, num = hit
+            ref = (ctx.mu[q] / ctx.phi[q]) * dirichlet(np.array([num / (q * float(M))]), X)[0]
+            assert abs(Sst[k] - ref) <= 1e-9 * abs(ref) + 1e-12
+
+
+def test_e5_scaling_counts(small):
+    ctx = small["ctx"]
+    c = 10
+    SS2e = SS2_even_array(X)
+    o = es.e5_scaling(X, ctx.S.copy(), ctx.lam, ctx.mu, ctx.phi, SS2e, c)
+    Q = math.isqrt((X - 1) // (2 * c))
+    A = es.MajorArcs(X, M, Q, c, ctx.mu, ctx.phi)
+    a2 = np.abs(ctx.S) ** 2
+    Pm = (a2.sum() - a2[A.idx].sum()) / M
+    S2M = ctx.S[A.idx] ** 2
+    Ns = es.even_targets(X)
+    IM = np.array([np.sum(S2M * e_minus(int(N), A.idx, M)).real / M for N in Ns])   # direct, no FFT
+    assert o["Q"] == Q and abs(o["P_m"] - Pm) <= 1e-12 * Pm
+    assert o["n_transmitted"] == int(np.sum(IM > Pm)) and o["n_closes"] == int(np.sum(Pm / IM < 0.99))
+    assert o["need"] == pytest.approx(Pm * SS2e[X] / IM[-1], rel=1e-9)
+    assert o["certificates_ok"]
+
+
+def test_report_decision_margin():
+    import escapes_report as rep
+
+    assert [rep.lab(x) for x in (0.989, 0.99, 1.0, 1.01, 1.0101)] == ["closes", "undecided", "undecided", "undecided", "fails"]
+    assert rep.first_close([1.2, 0.995, 0.98, 0.5]) == 2
+    assert rep.first_close([0.5, 0.98], start=1) == 1 and rep.first_close([1.0, 1.1]) is None
+    assert rep.r3(0.995).endswith("(undecided)") and rep.r3(0.0072) == "0.0072"

@@ -14,19 +14,21 @@ measures the obstacle for one N (E0), and it tests, at the same X, the relaxatio
 **What "closes" means.** For a target N and arcs M(Q,c) (half-width c/N, exact integer membership, as in results.md),
 R(N) = I_M + I_m. A bound on |I_m| that uses magnitudes only is computed and divided by I_M. Because the arc integrals
 are Riemann sums, each ratio carries a decision margin: **closes** < 0.99, **undecided** 0.99–1.01, **fails** > 1.01.
-"Closes" means the method's inequality alone gives R(N) > 0 for that target, numerically, at this X. Every K\*, r\* and
-z\* below is a finite-X statistic of this computation, not comparable to a constant in a theorem.
+"Closes" means the method's inequality alone gives R(N) > 0 for that target, numerically, at this X. The grid-sum
+inequalities themselves are exact (M > 2X, finite sums), so a ratio just below 1 is still a valid statement about the
+grid; the margin is for reading it as the continuous circle method, of which the grid sums are Riemann sums. Every K\*,
+r\* and z\* below is a finite-X statistic of this computation, not comparable to a constant in a theorem.
 
 ## Headline
 
 | experiment | question | key numbers | verdict at X = 10^6 | literature direction |
 |:---|:---|:---|:---|:---|
-| E0 obstacle | how far is the binary wall from closing, for one N? | P_m/I_M = 2.90 at (150,20); best refinement 3.3·I_M | fails at every (Q,c); window phases over ≈ 20/N would suffice | the open problem |
-| E1 average over N | how many of the 250,001 even N in [X/2, X] can the inequality lose? | F ≤ 274 (true 4th moment), ≤ 5,935 (sup form); actual F = 0 | closes for all but ≤ 0.11% (sup form 2.4%) | van der Corput, Chudakov, Estermann 1937–38 |
-| E5 transmission | does any single N get through with no relaxation? | 21 N at (223,10), best P_m/I_M(N) = 0.919 | closes for N with SS2 ≈ 5; fraction 2.8% at 10^4 → 0.0014% at 2·10^6 | finite checks to 4·10^18 |
-| E2 Linnik | N = p + p′ + 2^(k₁) + … + 2^(k_K) | joint B_1/I_M,1 = 0.505; theorem-shaped K\* = 4 / 5 / 7 | closes at K = 1 (joint bound), generic averaging | Linnik 1951/53; best published K = 8 |
+| E0 obstacle | how far is the binary wall from closing, for one N? | P_m/I_M = 2.90 at (150,20); best magnitude-only refinement 3.3·I_M | fails at every (Q,c); window phases over ≈ 21/N would suffice (W < 0.99) | the open problem |
+| E1 average over N | how many of the 250,001 even N in [X/2, X] can the inequality lose? | at (150,20): F ≤ 274 (true 4th moment), ≤ 15,058 (textbook sup form of the 1937–38 proofs); actual F = 0 at every pair | at (150,20) closes for all but ≤ 0.11% (textbook form 6.0%) | van der Corput, Chudakov, Estermann 1937–38 |
+| E5 transmission | does any single N get through with no relaxation? | at (223,10) 16 N close and 5 are undecided; best P_m/I_M(N) = 0.919 | closes for a few N with SS2 ≈ 5; the fraction with P_m < I_M falls from 2.8% at 10^4 to 0.0014% at 2·10^6 | finite checks to 4·10^18 |
+| E2 Linnik | N = p + p′ + 2^(k₁) + … + 2^(k_K) | joint B_1/I_M,1 = 0.505; theorem-shaped K\* = 4 / 5 / 7 | closes at K = 1 for every Q ≥ 20 (joint bound; K = 2 at Q = 5) — generic averaging | Linnik 1951/53; best published K = 8 |
 | E3 almost-primes | N = p + m with Ω(m) ≤ r | Ω ≤ 2: joint 0.828 at (150,20); random set of equal density 2.30 | closes at r = 2–4 depending on (Q,c) | Rényi 1948, Chen 1973 (sieve theorems) |
-| E4 smooth weight | does smoothing move the wall? (control) | binary P_m/R_η = 2.67–5.85 | binary wall unchanged; ternary c = 5 plateau removed | standard practice |
+| E4 smooth weight | does smoothing move the wall? (control) | binary P_m/R_η = 2.67–5.85 | binary wall unchanged; ternary c = 5 plateau removed (sidelobes suppressed to ≈ 1%) | standard practice |
 
 ## 0. Certificates
 
@@ -37,34 +39,35 @@ Every identity the experiments rely on, checked at full scale (M = 2^23 unless s
 | Bessel identity Σ_N I_m(N)² = ∫_m\|S\|⁴, all 20 pairs | max rel. error 4.7e-12 |
 | full-circle 4th moment ∫\|S\|⁴ = Σ_N r2(N)² (additive energy) | 1.532122e18 vs 1.532122e18, rel. 0.0e0 |
 | E0: walk endpoint = R2 − I_M; path length = E1's P_m | 7.0e-16·R2 (imag ≤ 2.6e-17·R2); 3.7e-16 |
-| E1/E5: every transmitted N has r2(N) ≥ I_M(N) − P_m > 0 (20 pairs + 12 scaling runs) | all hold |
+| E1/E5: every transmitted N has r2(N) ≥ I_M(N) − P_m > 0 (20 pairs at X = 10^6, 12 scaling runs) | all hold |
 | E2: R_K grid = direct, K ≤ 14 (grid exact) | max rel. 1.1e-15, imag ≤ 3.1e-16 |
 | E2: K = 15, 16 (past the exactness limit; the aliased tuples are negligible) | rel. 1.2e-15, 1.3e-15 |
 | E3: R^(A)(X) grid = direct, all 40 sets | max rel. 4.3e-16, imag ≤ 1.7e-16 |
 | E4: R_η(X) and R3_η(N') grid = direct (4 targets) | 1.3e-16; max 5.6e-16 |
 | E4: R_η / main, R3_η / main | 0.99984; 0.99975, 1.00032, 1.00044, 1.00019 |
 
-E5 single-N certificates recomputed with S truncated at N itself (P_m(S_N) < P_m(S_X), so the X = 10^6 arrays are conservative for N < X), arcs (Q_max(N, 10), 10):
+E5 single-N certificates recomputed with S truncated at N itself, on its own grid (M ≥ 4N) with arcs (Q_max(N, 10), 10) of half-width 10/N. For N well below X this is a different and much stronger certificate than the X = 10^6 arrays give (last column, S_X with arcs (223,10)); near X the two agree:
 
-| N | factorisation | M | (Q,c) | P_m / I_M(N) | verdict |
-|---:|:---|:---|---:|---:|:---|
-| 510,510 | 2·3·5·7·11·13·17 | 2^21 | (159,10) | 0.844 | closes |
-| 990,990 | 2·3²·5·7·11²·13 | 2^22 | (222,10) | 0.918 | closes |
-| 999,998 | 2·31·127² | 2^22 | (223,10) | 3.398 | fails |
+| N | factorisation | M | (Q,c) | P_m / I_M(N) | verdict | with S_X, (223,10) |
+|---:|:---|:---|---:|---:|:---|---:|
+| 510,510 | 2·3·5·7·11·13·17 | 2^21 | (159,10) | 0.844 | closes | 1.701 |
+| 990,990 | 2·3²·5·7·11²·13 | 2^22 | (222,10) | 0.918 | closes | 0.919 |
+| 999,998 | 2·31·127² | 2^22 | (223,10) | 3.398 | fails | 3.398 |
 
-Run: 4.1 min, peak RSS 1,412 MB.
+Run: 4.0 min, peak RSS 1,412 MB.
 
 ## 1. E0 — the obstacle, measured
 
 For one target N = X, the minor arcs add M·|m| phasors w_k = S(k/M)² e(−Nk/M)/M to the count. Laid head to tail they
 form a walk F_j = Σ_(i≤j) w_(k_i): its **path length** is P_m = ∫_m|S|², its **endpoint** is I_m(N) = R2(N) − I_M(N).
 A bound that knows only magnitudes must allow every step to point the same way, so it can never beat P_m.
-Every column below is in units of R2(X) = 1,756,567.5 except the last four.
+Every column below is in units of R2(X) = 1,756,567.5 except the last three. Δ\* is the window width at which the dial
+W (below) drops under 0.99.
 
 | (Q,c) | path P_m | max \|F\| | endpoint I_m | I_M | rms, 1/N cells | σ_rp = P_m/√(N\|m\|) | Hölder √(\|m\|∫_m\|S\|⁴) | sup_m\|S\|·∫_m\|S\| | sea after model, best | model bound / I_M | W(∞) (components) | Δ* |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|---:|---:|:---|
-| (150,20) | 2.873 | 0.0138 | +0.0098 | 0.990 | 0.0051 | 0.0034 | 5.23 | 20.96 | 1.95 (Q' = 1414) | 3.31–4.69 | 0.431 (6,858) | ≈ 20/N |
-| (20,10) | 4.886 | 0.0492 | -0.0444 | 1.044 | 0.0323 | 0.0049 | 37.77 | 164.76 | 2.66 (Q' = 1414) | 7.26–7.60 | 0.331 (128) | ≈ 517/N |
+| (150,20) | 2.873 | 0.0138 | +0.0098 | 0.990 | 0.0051 | 0.0034 | 5.23 | 20.96 | 1.95 (Q' = 1414) | 3.31–4.69 | 0.431 (6,858) | ≈ 21/N |
+| (20,10) | 4.886 | 0.0492 | -0.0444 | 1.044 | 0.0323 | 0.0049 | 37.77 | 164.76 | 2.66 (Q' = 1414) | 7.26–7.60 | 0.331 (128) | ≈ 534/N |
 
 **Bound ladder at (150,20).** Every magnitude-only refinement we tried is at least as long as the path: Hölder is
 1.82·P_m, sup × L¹ is 7.3·P_m. Subtracting a major-arc model S\* (spikes
@@ -102,19 +105,21 @@ N·Δ = B·X/M) and add |window integral| over all windows: W(B) = Σ|∫_window
 | 262,144 | 31250.00 | 0.431 | 0.341 |
 | whole components | ∞ | 0.431 | 0.331 |
 
-W drops below 1 at N·Δ ≈ 20 at (150,20) and ≈ 517 at (20,10) (log–log interpolation between
-the tabulated B). Independent cells would need only (P_m/I_M)² = 8.4. The rms of the cell sums at width 1/N is
-1.5× the random-phase yardstick σ_rp at (150,20) and
-6.6× at (20,10): cells of width 1/N are not independent, because the minor arcs
-still contain unresolved spikes at a/q with q > Q, each coherent over about 1/N. At (20,10) those spikes (q = 21…) carry
-coherent local integrals of size about N/φ(q)² that cancel only between different a/q with the same q (a Ramanujan sum,
-which is non-local), so the windows must be much wider before W < 1.
+W drops below 0.99 at N·Δ ≈ 21 at (150,20) and ≈ 534 at (20,10) (log–log interpolation
+between the tabulated B). The equal-cell yardstick — W falling like (P_m/I_M)/√(NΔ) from W = P_m/I_M at NΔ = 1, as for
+equal, independent cells of width 1/N — would reach 1 at NΔ = (P_m/I_M)² = 8.4; it is too optimistic for two
+reasons. The cells are very unequal: the root-sum-square of the cell sums at width 1/N, √(Σ|cell|²) (the endpoint's rms if
+whole cells had independent random phases), is 1.5× σ_rp at (150,20) and
+6.6× at (20,10), because unresolved spikes at a/q with q > Q concentrate the energy
+in a few cells. And neighbouring cells are correlated over the coherence length ≈ 1/N. At (20,10) the left-out spikes
+(q = 21…) carry coherent local integrals of size about N/φ(q)² that cancel only between different a/q with the same q (a
+Ramanujan sum, which is non-local), so the windows must be much wider before W < 1.
 
 **Reading.** At one N, with numbers: the binary wall is a statement about phases. The walk's path is
 2.9× the radius it would have to leave to spoil the count, yet it never strays more than
 1.4% of the way out (at (150,20); 4.7× and
 4.7% at (20,10)). Knowing the phase-summed integral over windows about
-20/N wide would be enough at (150,20). That is a descriptive statistic of this S, not a quantity any
+21/N wide would be enough at (150,20) (W < 0.99). That is a descriptive statistic of this S, not a quantity any
 theorem controls: proving it for every large N would need a minor-arc estimate uniform in N, which is the open problem.
 
 ## 2. E1 — average over N (the failure count)
@@ -126,8 +131,9 @@ from the exact autoconvolution (M > 2X, so R2(N) = ∫S²e(−Nα) exactly for N
 F = #{N ∈ 𝒩 : |I_m(N)| ≥ I_M(N)} (failures of the method's inequality, not numbers that fail to be sums of two primes),
 Chebyshev gives F ≤ U / min_𝒩 I_M(N)², with four choices of U:
 
-* **textbook**: U = sup_m|S|²·ΣΛ² (the form the 1937–38 proofs use, with Vinogradov's sup bound);
-* **natural sup**: U = sup_m|S|²·P_m, valid because ∫_m|S|⁴ ≤ sup_m|S|²·∫_m|S|² (the ternary device);
+* **textbook**: U = sup_m|S|²·ΣΛ², from ∫_m|S|⁴ ≤ sup_m|S|²·∫_0^1|S|² (Parseval) — the form of the 1937–38 proofs, with
+  Vinogradov's bound for the sup;
+* **sup²·P_m**: U = sup_m|S|²·P_m, from ∫_m|S|⁴ ≤ sup_m|S|²·∫_m|S|² (sup pulled out, minor-arc L² measured);
 * **true 4th moment**: U = ∫_m|S|⁴, measured — no theorem gives it;
 * **oracle**: U = Σ_(N∈𝒩) I_m(N)², Chebyshev applied to the actual values — no theorem gives it either.
 
@@ -161,9 +167,9 @@ sea). "harmful sign" means I_m(N) < 0.
 0.0050, the 99th percentile 0.0204, the 99.9th 0.0273, the worst 0.0449. Yet for a single
 target the magnitude bound P_m/I_M(N) is 1.02–7.74 there: each receiver alone sees
 the wall. Taken together, the receivers share one energy budget, so few can fail: the true 4th moment allows
-274 failures (0.11%), the sup form 5,935
+274 failures (0.11%), the sup²·P_m form 5,935
 (2.4%), the textbook form 15,058
-(6.0%). At (20,10) the sup forms allow more failures than there are targets while the
+(6.0%). At (20,10) both sup forms allow more failures than there are targets while the
 4th moment still allows 4.1%; at Q = 5 even the 4th moment allows
 60%, because the tall spikes at q = 6, 7, 10, … left on the minor arcs make the sea very
 non-Gaussian (κ ≈ 1045).
@@ -177,8 +183,9 @@ out are largest. At the two Q_max pairs that deterministic leakage is small and 
 
 **What this is.** It reproduces, at one X, the mean-square (Bessel + Chebyshev) step of the exceptional-set theorems of
 van der Corput, Chudakov and Estermann (1937–38), who proved E(X) ≪ X(log X)^(−A) using Vinogradov's minor-arc bound.
-Those proofs use the sup form, which at (150,20) gives 2.4%, not
-0.11%, and they need a provable major-arc model; here I_M is computed from the true S.
+Those proofs use the textbook form, which at (150,20) gives 6.0%
+(15,058), not 0.11%, and they need a provable major-arc model; here I_M is
+computed from the true S.
 Montgomery–Vaughan (1975) proved E(X) ≪ X^(1−δ); their new input is on the major arcs (moduli up to X^δ, zero-density
 estimates, a possible exceptional zero), which this experiment does not test. One X cannot tell X^(1−δ) from
 X(log X)^(−A): Q = 150 is both X^0.36 and (log X)^1.9. And since every even N ≤ 4·10^18 is known to be a sum of two
@@ -188,61 +195,71 @@ primes, F counts failures of the method, not of Goldbach.
 
 P_m does not depend on N; the signal I_M(N) ≈ SS2_Q(N)·N does. Whenever I_M(N) > P_m, the plain magnitude inequality
 (the triangle inequality |I_m(N)| ≤ P_m) certifies R2(N) ≥ I_M(N) − P_m > 0 for that one N (in floating point; checked
-against the exact r2 in §0).
-need(X) = P_m·SS2(X)/I_M(X) is the singular series a target near X would need to get through.
+against the exact r2 in §0). On the grid that inequality is exact (M > 2X, a finite sum), so even a ratio just below 1
+is a valid grid certificate; but read as a statement about the continuous arcs it carries the same decision margin as
+everything else, so ratios in [0.99, 1) are counted separately as undecided. need(X) = P_m·SS2(X)/I_M(X) is the singular
+series a target near X would need to get through.
 
 At X = 10^6 no grid pair transmits anything (closest: P_m/I_M(N) = 1.019). At the two Q_max pairs the arcs
-cover more of the circle and the wall drops below the signal of the most composite targets:
-**3** targets at (158,20) (960,960, 981,750, 990,990) and
-**21** at (223,10). The closest non-transmitted target at (223,10) has P_m/I_M(N) = 1.002. For N = 10^6
+cover more of the circle and the wall drops below the signal of the most composite targets. At (158,20)
+**1** target closes and 2 more are undecided
+(990,990: 0.968, 960,960: 0.997, 981,750: 0.999); at (223,10)
+**16** close and 5 more are undecided. All 21 are multiples of 210 = 2·3·5·7, 16 of them of 2310 = 2·3·5·7·11. The closest target with ratio ≥ 1 at (223,10) has
+P_m/I_M(N) = 1.002. For N = 10^6
 itself (SS2 = 1.76) the ratio is 2.90 at (150,20) and 2.65 at
 (223,10).
 
-Transmitted targets at (223,10), best margin first:
+Targets with P_m < I_M(N) at (223,10), best margin first:
 
-| N | factorisation | SS2(N) | P_m / I_M(N) |
-|---:|:---|---:|---:|
-| 990,990 | 2·3²·5·7·11²·13 | 5.121 | 0.919 |
-| 960,960 | 2⁶·3·5·7·11·13 | 5.121 | 0.939 |
-| 981,750 | 2·3·5³·7·11·17 | 5.007 | 0.946 |
-| 930,930 | 2·3·5·7·11·13·31 | 5.298 | 0.954 |
-| 965,580 | 2²·3·5·7·11²·19 | 4.971 | 0.963 |
-| 974,610 | 2·3²·5·7²·13·17 | 4.916 | 0.968 |
-| 985,530 | 2·3·5·7·13·19² | 4.880 | 0.969 |
-| 993,300 | 2²·3·5²·7·11·43 | 4.809 | 0.978 |
-| 986,370 | 2·3·5·7²·11·61 | 4.774 | 0.985 |
-| 956,340 | 2²·3³·5·7·11·23 | 4.918 | 0.986 |
-| 942,480 | 2⁴·3²·5·7·11·17 | 5.007 | 0.986 |
-| 984,060 | 2²·3²·5·7·11·71 | 4.763 | 0.987 |
-| 979,440 | 2⁴·3·5·7·11·53 | 4.787 | 0.987 |
-| 988,680 | 2³·3·5·7·11·107 | 4.739 | 0.987 |
-| 995,610 | 2·3·5·7·11·431 | 4.705 | 0.989 |
-| 977,130 | 2·3³·5·7·11·47 | 4.799 | 0.989 |
-| 997,920 | 2⁵·3⁴·5·7·11 | 4.694 | 0.991 |
-| 903,210 | 2·3·5·7·11·17·23 | 5.246 | 0.998 |
-| 996,450 | 2·3·5²·7·13·73 | 4.674 | 0.998 |
-| 985,320 | 2³·3²·5·7·17·23 | 4.721 | 0.999 |
-| 999,180 | 2²·3²·5·7·13·61 | 4.687 | 0.999 |
+| N | factorisation | SS2(N) | P_m / I_M(N) | verdict |
+|---:|:---|---:|---:|:---|
+| 990,990 | 2·3²·5·7·11²·13 | 5.121 | 0.919 | closes |
+| 960,960 | 2⁶·3·5·7·11·13 | 5.121 | 0.939 | closes |
+| 981,750 | 2·3·5³·7·11·17 | 5.007 | 0.946 | closes |
+| 930,930 | 2·3·5·7·11·13·31 | 5.298 | 0.954 | closes |
+| 965,580 | 2²·3·5·7·11²·19 | 4.971 | 0.963 | closes |
+| 974,610 | 2·3²·5·7²·13·17 | 4.916 | 0.968 | closes |
+| 985,530 | 2·3·5·7·13·19² | 4.880 | 0.969 | closes |
+| 993,300 | 2²·3·5²·7·11·43 | 4.809 | 0.978 | closes |
+| 986,370 | 2·3·5·7²·11·61 | 4.774 | 0.985 | closes |
+| 956,340 | 2²·3³·5·7·11·23 | 4.918 | 0.986 | closes |
+| 942,480 | 2⁴·3²·5·7·11·17 | 5.007 | 0.986 | closes |
+| 984,060 | 2²·3²·5·7·11·71 | 4.763 | 0.987 | closes |
+| 979,440 | 2⁴·3·5·7·11·53 | 4.787 | 0.987 | closes |
+| 988,680 | 2³·3·5·7·11·107 | 4.739 | 0.987 | closes |
+| 995,610 | 2·3·5·7·11·431 | 4.705 | 0.989 | closes |
+| 977,130 | 2·3³·5·7·11·47 | 4.799 | 0.989 | closes |
+| 997,920 | 2⁵·3⁴·5·7·11 | 4.694 | 0.991 | undecided |
+| 903,210 | 2·3·5·7·11·17·23 | 5.246 | 0.998 | undecided |
+| 996,450 | 2·3·5²·7·13·73 | 4.674 | 0.998 | undecided |
+| 985,320 | 2³·3²·5·7·17·23 | 4.721 | 0.999 | undecided |
+| 999,180 | 2²·3²·5·7·13·61 | 4.687 | 0.999 | undecided |
 
-**Scaling.** The same experiment for each cached S_X, arcs (Q_max(X, c), c), targets even N in [X/2, X]:
+**Scaling.** The same experiment for each cached S_X, arcs (Q_max(X, c), c), targets even N in [X/2, X]. "Transmitted"
+counts the targets that close (ratio < 0.99), with the undecided ones (0.99 ≤ ratio < 1) in brackets; the percentage is
+of all targets with ratio < 1:
 
 | X | Q (c=10) | transmitted (c=10) | need (c=10) | Q (c=20) | transmitted (c=20) | need (c=20) | max SS2 on 𝒩_X |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 10,000 | 22 | 71 / 2,501 (2.8%) | 2.96 | 15 | 39 / 2,501 (1.6%) | 3.15 | 4.69 |
-| 30,000 | 38 | 107 / 7,501 (1.4%) | 3.33 | 27 | 18 / 7,501 (0.24%) | 3.72 | 4.69 |
-| 100,000 | 70 | 80 / 25,001 (0.32%) | 3.77 | 49 | 32 / 25,001 (0.13%) | 3.98 | 5.12 |
-| 300,000 | 122 | 67 / 75,001 (0.089%) | 4.19 | 86 | 19 / 75,001 (0.025%) | 4.38 | 5.12 |
-| 1,000,000 | 223 | 21 / 250,001 (0.0084%) | 4.67 | 158 | 3 / 250,001 (0.0012%) | 4.87 | 5.46 |
-| 2,000,000 | 316 | 7 / 500,001 (0.0014%) | 4.90 | 223 | 0 / 500,001 (0%) | 5.06 | 5.46 |
+| 10,000 | 22 | 69 (+2) / 2,501 (2.8%) | 2.96 | 15 | 33 (+6) / 2,501 (1.6%) | 3.15 | 4.69 |
+| 30,000 | 38 | 91 (+16) / 7,501 (1.4%) | 3.33 | 27 | 15 (+3) / 7,501 (0.24%) | 3.72 | 4.69 |
+| 100,000 | 70 | 71 (+9) / 25,001 (0.32%) | 3.77 | 49 | 30 (+2) / 25,001 (0.13%) | 3.98 | 5.12 |
+| 300,000 | 122 | 49 (+18) / 75,001 (0.089%) | 4.19 | 86 | 11 (+8) / 75,001 (0.025%) | 4.38 | 5.12 |
+| 1,000,000 | 223 | 16 (+5) / 250,001 (0.0084%) | 4.67 | 158 | 1 (+2) / 250,001 (0.0012%) | 4.87 | 5.46 |
+| 2,000,000 | 316 | 3 (+4) / 500,001 (0.0014%) | 4.90 | 223 | 0 / 500,001 (0%) | 5.06 | 5.46 |
 
-**Reading.** The transmitted fraction falls from 2.8% at
-X = 10,000 to 0.0014% at X = 2,000,000 (c = 10). need(X)
-rises at every step of the table, as the no-fit heuristic of results.md §5 suggests (P_m/R2 ≈ (log N − log Q − 2.33)/SS2
-with Q = Q_max ≈ √(N/2c), so the wall grows like ½·log N). The largest singular series available below X
-grows only like log log X, in steps at primorial-type N (SS2 = 5.78 at 9,699,690 and
-6.06 at 223,092,870). We do not extrapolate where the two curves part for good. This corrects the premise that
-nothing gets through at X = 10^6, and shows why it is not a route to Goldbach: it works only for a vanishing set of very
-smooth N, with arcs covering about 30% of the circle and I_M computed from the true S rather than a provable model.
+**Reading.** The transmitted fraction falls at every tabulated X, from
+2.8% at X = 10,000 to
+0.0014% at X = 2,000,000 (c = 10). need(X) rises at every step, by
+1.94 across the table, i.e. about 0.37 per unit of ln X between its end points (a
+difference, not a fit). The no-fit heuristic of results.md §5, P_m/R2 ≈ (log N − log Q − 2.33)/SS2 with
+Q = Q_max ≈ √(N/2c), would give ½ per unit of ln X; it overshoots for wide arcs, which at Q_max cover about
+30% of the circle and swallow that share of the background (½·(1 − |M|) ≈ 0.35). The
+largest singular series available below X grows only like log log X (Mertens' theorem, at primorial-type N; e.g.
+SS2 = 5.78 at 9,699,690 and 6.06 at 223,092,870). We do not extrapolate where the two curves
+part for good. This corrects the premise that nothing gets through at X = 10^6, and shows why it is not a route to
+Goldbach: at every tabulated X it works only for a small and shrinking fraction of very smooth N, with arcs covering
+about 30% of the circle and I_M computed from the true S rather than a provable model.
 
 ## 4. E2 — add K powers of 2 (Linnik's problem)
 
@@ -321,10 +338,11 @@ Diagnostics at (150,20):
 
 * the correlation ratio B_K/(P_m·⟨|G|^K⟩_m) is 1.002, 1.005, 1.013, 1.028, 1.208, 1.682 for
   K = 1, 2, 3, 4, 8, 14: |S| and |G| are nearly independent on the minor arcs for small K;
-* the Rayleigh prediction (P_m/R2)·Γ(1+K/2)·L^(−K/2)/ρ_K gives 0.499, 0.153, 0.048, 0.018
+* the Rayleigh prediction P_m·Γ(1+K/2)·L^(K/2)/I_M,K (B_K ≈ P_m·E|G|^K with E|G|^K ≈ Γ(1+K/2)·L^(K/2)) gives 0.501, 0.154, 0.048, 0.018
   for K = 1–4, against measured 0.505, 0.154, 0.047, 0.018;
-* the cost per extra power, (B_(K+1)/B_K)/(I_M,K+1/I_M,K), is 0.17, 0.30, 0.31, 0.38, 0.41, 0.46 for K = 0…5,
-  rising toward sup_m|G|/L = 0.834;
+* the cost per extra power, (B_(K+1)/B_K)/(I_M,K+1/I_M,K), is 0.17, 0.30, 0.31, 0.38, 0.41, 0.46 for K = 0…5 and
+  still rising at K = 13 (0.77); its ceiling is sup_m|G|/(I_M,K+1/I_M,K) = 0.85–0.99 here (not
+  sup_m|G|/L = 0.834, because I_M,K+1/I_M,K ≈ L·ρ_(K+1)/ρ_K is below L);
 * inputs of the theorem-shaped bound: L·ΣΛ²/I_M,2 = 0.390, OD/I_M,2 = 1.140; optimal
   λ = 0.67 (C = 1), 0.60 (C = 2), 0.60 (C = 4);
 * meas(E_λ ∩ m) = 5.4e-3 (λ = 0.5), 8.6e-4 (λ = 0.6), 9.1e-5 (λ = 0.7), 2.3e-5 (λ = 0.8);
@@ -336,7 +354,9 @@ Diagnostics at (150,20):
   0.505 for powers of 2; 0.895 (max 0.974) at (20,10)
   against 0.888.
 
-**Reading.** At N = 10^6 the magnitude inequality closes with **one** power of 2 at every Q ≥ 20 (joint bound). The
+**Reading.** At N = 10^6 the magnitude inequality closes with **one** power of 2 at
+every Q ≥ 20 and at (10,10), (10,20)
+(joint bound), and with two at (5,5), (5,10), (5,20), (10,5). The
 sparse control shows this is generic averaging over 19 targets of the right sizes, not something special about powers of
 2. In the Rayleigh model the K = 1 ratio scales like (P_m/R2)/√L, i.e. like √(log N), so K = 1 is a finite-N phenomenon.
 Replacing exact quantities by what proofs can use moves K\* to 4 /
@@ -427,13 +447,16 @@ with A_3 or A_4 it closes at every short-list pair except (5,5) at r = 3. A rand
 (2.30 at (150,20)): its energy is sea from the start (f =
 0.518 against 0.169 for Ω ≤ 2, matching the random prediction (1 − δ)(1 − |M|)). So
 what closes the bound is the arithmetic concentration of the second family on the major arcs, plus density. For z ≤ 7,
-T_z is exactly a sum of Dirichlet kernels at j/d, d | P(z) ∈ {2, 6, 30}, which the arcs swallow once Q ≥ d (z = 5 at
-Q = 5 shows the exception: the spike at 1/6 sits on the minor arcs and the CS bound fails). As z grows the lines spread to
+T_z is exactly a sum of Dirichlet kernels at j/d, d | P(z) with P(z) ∈ {2, 6, 30}, which the arcs swallow once Q ≥ d.
+When some d exceeds Q those lines sit on the minor arcs: z = 5 at Q = 5 (lines at j/6) and z = 7 at every tabulated
+Q ≤ 20 (lines at j/30). The CS bound then fails at (5,5) for z = 5 and 7, while the joint bound still closes, and z = 7
+still closes at (20,10) because the j/30 lines are short. As z grows the lines spread to
 larger q, and at z ≈ √X the set is the primes again (1000-rough reproduces Ω ≤ 1). The Chen-shaped set closes only at
 (150,20).
 
-**r\* and z\* reflect how dense these sets are at X = 10^6, not the arithmetic of almost-primes.** For fixed r the density
-of A_r tends to 0 like (log log X)^(r−1)/((r−1)!·log X), so every fixed-r ratio eventually fails. Do not read
+**r\* and z\* are statistics of these sets at X = 10^6 — their density there together with their arithmetic — not
+asymptotic properties of almost-primes.** For fixed r the density of A_r tends to 0 like
+(log log X)^(r−1)/((r−1)!·log X) (Landau), so the density heuristic suggests every fixed-r ratio eventually fails. Do not read
 r\* = 2 at (150,20) as Chen's 2. The theorems in this direction are sieve theorems with no circle-method inequality:
 Rényi (1948) proved N = p + P_K for some absolute K with Brun's sieve and Linnik's large sieve; Chen (announced 1966,
 published 1973) proved N = p + P_2 with a weighted lower-bound sieve, Bombieri–Vinogradov at level 1/2 and the switching
@@ -498,10 +521,13 @@ per N′; sharp for c = 5 / 10 / 20:
 
 **Reading.** Smoothing removes the c = 5 plateau of the sharp cutoff (1.007 at N′ = X−1 for every Q ≥ 50, which is
 the arc-edge sidelobe at 0/1): with η, (150,5) drops to 0.629 at X−1 and to
-0.155 at 1.5X−1. At X ± 1 it pays the factor 1.56
-everywhere else, so (50,·) fails with η (1.448) where sharp (50,10) closes. Moving
-N′ to 1.5X helps both weights through the geometry of the singular integral and is not credited to smoothing. The
-sidelobes do not vanish: at the c = 5 edge they are about 1% of the peak. The binary P_m/R_η stays at
+0.155 at 1.5X−1. Wherever both sups are spikes (c = 20), η is
+1.59–1.63× worse at X − 1 — the geometric factor 1.563 times small
+differences in the sups and in Σw² against ΣΛ² — so (50,·) fails with η (1.448) where
+sharp (50,10) closes. Moving N′ to 1.5X helps both weights through the geometry of the singular integral and is not
+credited to smoothing. The window's sidelobes are suppressed, not removed: at the c = 5 edge |η̂| is about 1% of the peak.
+The ripple of |S_η| in Fig X4(a) (0.1–1% of the peak) is mostly the primes' own fluctuation, of size
+√Σw²/ψ_η = 4.2e-03, not window leakage (|η̂|/η̂(0) < 1.4e-3 beyond ξ = 10). The binary P_m/R_η stays at
 2.67–5.85: the main term and Σw² both scale with ∫η², so the decoherent power is unchanged. Leakage is
 an edge effect; the wall is a power budget.
 
@@ -512,11 +538,11 @@ an edge effect; the wall is a power budget.
 **Fig X0 — the obstacle.** Every minor-arc grid point adds one phasor S(α)²e(−Nα)dα to the binary count. Laid head to
 tail, the 6.1 million phasors at (150,20) form a path 2.9 times longer than the
 radius of the circle they would have to leave to spoil the count, yet the walk never strays more than
-1.4% of the way out (inset ×50). A bound that knows only the step lengths must allow
-the straight path, and every magnitude refinement in panel (b) is at least that long; even after the resolvable locked
+1.4% of the way out (zoomed inset). A bound that knows only the step lengths must allow
+the straight path, and every magnitude-only bound in panel (b) is at least that long; even after the resolvable locked
 channels are stripped off (Q′ ≈ 1414) a decoherent sea of
-1.95·R2 remains. Panel (c) measures how much phase knowledge would close the gap:
-window integrals about 20/N wide at (150,20), but about 517/N at
+1.95·R2 remains (grey bar; not itself a bound). Panel (c) measures how much phase
+knowledge would close the gap (W < 0.99): window integrals about 21/N wide at (150,20), but about 534/N at
 (20,10), where the left-out spikes cancel only across different a/q.
 
 ![Fig X1](figures/fig_X1_exceptional.png)
@@ -525,9 +551,10 @@ window integrals about 20/N wide at (150,20), but about 517/N at
 I_m(N) is its minor-arc output. Alone, a receiver must allow every minor-arc phasor to line up (P_m/I_M(N) =
 1.02–7.74 at (150,20)). Together, the receivers share one energy budget
 Σ_N I_m(N)² = ∫_m|S|⁴, so the decoherent power cannot be in phase with many references at once: Chebyshev lets at most
-274 of the 250,001 targets fail at (150,20), the sup form (the ternary device) 5,935.
-None fails, and the median |I_m|/I_M is 0.005. Panel (c): only about 25–37%
-of the budget lands on the targets; the rest goes to odd N and to N outside [X/2, X].
+274 of the 250,001 targets fail at (150,20); the textbook sup form of the 1937–38 proofs allows
+15,058. None fails, and the median |I_m|/I_M is 0.005. Panel (c): only
+25–32% of the budget lands on the targets at the pairs shown; the rest goes to other
+even N, to odd N and to N > 2X.
 
 ![Fig X5](figures/fig_X5_transmission.png)
 
@@ -535,17 +562,18 @@ of the budget lands on the targets; the rest goes to odd N and to N outside [X/2
 does not know which reference will demodulate it. The signal does: at a spike a/q the reference samples the phase
 e(−aN/q), and summed over the φ(q) spikes with denominator q that is the Ramanujan sum c_q(N) — φ(q) when q | N, −1 when
 q is a prime not dividing N. So SS2(N) counts how many locked spikes the reference catches in phase. Multiples of
-2·3·5·7·11 collect about 3.6× the signal of N = 2p against the same wall, and 21 of them get through at (223,10).
-Panel (b): the wall need(X) rises at every step (2.96, 3.33, 3.77, 4.19, 4.67, 4.90) while the best available
-signal climbs only in rare steps, so the transmitted counts (labels) thin out.
+2·3·5·7·11 collect about 3.6× the signal of N = 2p against the same wall. At (223,10), 21 targets have
+P_m < I_M(N) (16 below the 0.99 margin); 21 of them are multiples of 210 and 16 of 2310. Panel (b): the wall
+need(X) rises at every step (2.96, 3.33, 3.77, 4.19, 4.67, 4.90) while the largest available SS2 rises slowly,
+so the transmitted fraction falls at every step (labels: counts).
 
 ![Fig X2](figures/fig_X2_linnik.png)
 
 **Fig X2 — Linnik.** A second bank of L = 19 oscillators at frequencies 2, 4, …, 2^19. Near α = 0 and 1/2
 they all point the same way; over most of the circle they behave like a random walk (⟨|G|⟩ = 3.89,
 ∫|G|² = L). Weighting the minor-arc energy by |G|^K costs about 0.17 against the
-main term for the first power and 0.30–0.46
-for each further one, enough for K = 1 at every Q ≥ 20 (panel a). As K grows, |G|^K moves the weight toward the
+main term for the first power, 0.30–0.46 for powers 2–6 and 0.77 by the 14th,
+enough for K = 1 at every Q ≥ 20 (panel a). As K grows, |G|^K moves the weight toward the
 shoulders of the arcs at 0 and 1/2, where G's slow oscillators are still in phase and S still has Dirichlet sidelobes:
 the share of B_K within 60/N of those two points is 0.4% at K = 1,
 9% at K = 6 and 36% at K = 14 at (150,20)
@@ -563,10 +591,12 @@ the primes again. A random set of the same density never closes (2.30 at
 ![Fig X4](figures/fig_X4_window.png)
 
 **Fig X4 — smooth weight (control).** Apodization tapers each oscillator's amplitude to zero at both ends of the
-observation window. It removes the ringing of the rectangular window (the Dirichlet sidelobes, panel a) that held the
-ternary bound at 1.007 for c = 5 at every Q ≥ 50 (panel b). It does not change the power of the decoherent sea: the binary
-P_m/R_η stays at 2.67–5.85
-(panel c).
+observation window. It suppresses the ringing of the rectangular window (the Dirichlet sidelobes, panel a: about 1%
+instead of 6.4% of the peak at the c = 5 edge; the ripple left in |S_η|, ≈ √Σw²/ψ_η = 4.2e-03, is the primes' own
+fluctuation) that held the ternary bound at 1.007 for c = 5 at every Q ≥ 50 (panel b). It does not change the power of the
+decoherent sea: the binary P_m/R_η stays at
+2.67–5.85 over all 20
+pairs (panel c shows c = 10 and 20).
 
 ## What this does and does not show
 
@@ -577,8 +607,11 @@ P_m/R_η stays at 2.67–5.85
 * That each classical relaxation turns the binary problem into one where a magnitude inequality closes at this X, and
   where the slack comes from: a shared energy budget across targets (E1), a second bank of oscillators that is mostly
   decoherent on the minor arcs (E2), a second family whose energy sits on the major arcs (E3).
-* That a few very smooth N get through with no relaxation at all, and that this dies out as X grows (E5).
-* That a smooth weight fixes the arc-edge leakage of the ternary bound but leaves the binary wall where it was (E4).
+* That a few very smooth N get through with no relaxation at all, and that the fraction that does falls at every
+  tabulated X, from 2.8% at 10^4 to
+  0.0014% at 2·10^6 (E5).
+* That a smooth weight suppresses the arc-edge leakage of the ternary bound (removing its c = 5 plateau) but leaves the
+  binary wall where it was (E4).
 * Controls: random sets of the same density (E3) and scale-matched random shifts (E2) separate arithmetic from density
   and from generic averaging.
 
@@ -588,28 +621,29 @@ P_m/R_η stays at 2.67–5.85
   from the true S, not from a provable major-arc model.
 * That any K\*, r\* or z\* matches a theorem: the theorems pay for major-arc and asymptotic losses that one X cannot show,
   and Rényi's and Chen's theorems are sieve theorems that do not use this inequality at all. r\* = 2 is not Chen's 2.
-* Trends: no fits are made; where a quantity is said to grow, the table shows each value.
+* Trends: no fits are made. Measured quantities are shown at each X; the growth rates quoted (log log X for the largest
+  singular series, ½·log N for the heuristic wall, the density of {Ω ≤ r}) are theorems or heuristics, labelled as such.
 
 ## References
 
-* J. G. van der Corput, Sur l'hypothèse de Goldbach pour presque tous les nombres pairs, Acta Arith. 2 (1937).
+* J. G. van der Corput, Sur l'hypothèse de Goldbach pour presque tous les nombres pairs, Acta Arith. 2 (1937), 266–290.
 * N. G. Chudakov, On the density of the set of even numbers which are not representable as a sum of two odd primes,
-  Izv. Akad. Nauk SSSR (1938).
+  Izv. Akad. Nauk SSSR Ser. Mat. 2 (1938), 25–40.
 * T. Estermann, On Goldbach's problem: proof that almost all even positive integers are sums of two primes,
-  Proc. London Math. Soc. 44 (1938).
-* H. L. Montgomery, R. C. Vaughan, The exceptional set in Goldbach's problem, Acta Arith. 27 (1975).
-* Yu. V. Linnik, Prime numbers and powers of two, Trudy Mat. Inst. Steklov 38 (1951); Addition of prime numbers with
-  powers of one and the same number, Mat. Sb. 32 (1953).
-* P. X. Gallagher, Primes and powers of 2, Invent. Math. 29 (1975).
-* D. R. Heath-Brown, J.-C. Puchta, Integers represented as a sum of primes and powers of two, Asian J. Math. 6 (2002).
-* J. Pintz, I. Z. Ruzsa, On Linnik's approximation to Goldbach's problem I, Acta Arith. 109 (2003); II, Acta Math.
-  Hungar. 161 (2020).
+  Proc. London Math. Soc. (2) 44 (1938), 307–314.
+* H. L. Montgomery, R. C. Vaughan, The exceptional set in Goldbach's problem, Acta Arith. 27 (1975), 353–370.
+* Yu. V. Linnik, Prime numbers and powers of two, Trudy Mat. Inst. Steklov 38 (1951), 152–169; Addition of prime numbers with
+  powers of one and the same number, Mat. Sb. (N.S.) 32 (1953), 3–60.
+* P. X. Gallagher, Primes and powers of 2, Invent. Math. 29 (1975), 125–142.
+* D. R. Heath-Brown, J.-C. Puchta, Integers represented as a sum of primes and powers of two, Asian J. Math. 6 (2002), 535–565.
+* J. Pintz, I. Z. Ruzsa, On Linnik's approximation to Goldbach's problem I, Acta Arith. 109 (2003), 169–194; II, Acta
+  Math. Hungar. 161 (2020), 569–582.
 * A. Rényi, On the representation of an even number as the sum of a single prime and a single almost-prime number,
-  Izv. Akad. Nauk SSSR Ser. Mat. 12 (1948).
+  Izv. Akad. Nauk SSSR Ser. Mat. 12 (1948), 57–78.
 * J. R. Chen, On the representation of a larger even integer as the sum of a prime and the product of at most two primes,
-  Sci. Sinica 16 (1973).
+  Sci. Sinica 16 (1973), 157–176.
 * T. Oliveira e Silva, S. Herzog, S. Pardi, Empirical verification of the even Goldbach conjecture and computation of
-  prime gaps up to 4·10^18, Math. Comp. 83 (2014).
+  prime gaps up to 4·10^18, Math. Comp. 83 (2014), 2033–2060.
 
 ## Reproduce
 

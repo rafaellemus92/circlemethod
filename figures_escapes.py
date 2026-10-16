@@ -50,7 +50,7 @@ def fig_X0(res, out):
     ax.set_xlabel("Re (units of R2)")
     ax.set_ylabel("Im (units of R2)")
     ax.set_title("(a) minor-arc phasors head to tail, (Q, c) = (150, 20)")
-    ins = ax.inset_axes([0.04, 0.05, 0.42, 0.42])
+    ins = ax.inset_axes([0.13, 0.06, 0.36, 0.36])
     ins.plot(wk.real * 100, wk.imag * 100, color=BLUE, lw=0.6)
     ins.plot([0], [0], "o", color=INK, ms=3.5)
     ins.plot([wk[-1].real * 100], [wk[-1].imag * 100], "s", color=ORANGE, ms=4)
@@ -60,18 +60,19 @@ def fig_X0(res, out):
     ax.legend(loc="upper left", fontsize=6.8)
     ax = axes[1]
     best = min(o["model"], key=lambda m: m["P_E"])
-    bars = [("actual |I_m|", abs(o["I_m"].real)), ("random phases (1/N cells), rms", o["random_phase_rms"]),
+    bestb = min(o["model"], key=lambda m: m["bound"])
+    bars = [("actual |I_m|", abs(o["I_m"].real)), ("cells of width 1/N, random phases: rms", o["random_phase_rms"]),
+            (f"sea after subtracting spikes, Q' = {best['Qp']} (not a bound)", best["P_E"]),
             ("P_m = ∫_m|S|$^2$ (magnitude bound)", o["P_m"]), ("Hölder √(|m|∫_m|S|$^4$)", o["holder"]),
-            (f"sea after subtracting spikes, Q' = {best['Qp']}", best["P_E"]),
-            ("model-subtraction bound", best["bound"]), ("sup_m|S| · ∫_m|S|", o["sup_L1"])]
+            (f"best model-subtraction bound (Q' = {bestb['Qp']})", bestb["bound"]), ("sup_m|S| · ∫_m|S|", o["sup_L1"])]
     y = np.arange(len(bars))
-    ax.barh(y, [b[1] / R2 for b in bars], color=[AQUA, AQUA, BLUE, BLUE, BLUE, BLUE, BLUE], height=0.55)
+    ax.barh(y, [b[1] / R2 for b in bars], color=[AQUA, AQUA, MUTED, BLUE, BLUE, BLUE, BLUE], height=0.55)
     ax.axvline(IM, color=ORANGE, lw=1.6)
     ax.text(IM * 1.1, -0.45, "I_M (signal)", color=INK, fontsize=8, va="center")
     ax.set_yticks(y, [b[0] for b in bars], fontsize=7.5)
     ax.set_xscale("log")
     ax.set_xlabel("units of R2 (log)")
-    ax.set_title("(b) the bound ladder at (150, 20): every magnitude bound exceeds I_M")
+    ax.set_title("(b) the bound ladder at (150, 20): every magnitude-only bound (blue) exceeds I_M")
     ax = axes[2]
     for (Q, c), col in ((((150, 20)), BLUE), (((20, 10)), AQUA)):
         o = e0[(Q, c)]
@@ -79,8 +80,8 @@ def fig_X0(res, out):
         W = [d["W"] for d in o["dial"]]
         ax.plot(nd, W, "o-", color=col, ms=5, mec=SURF, mew=1.0, label=f"({Q}, {c}): Σ|window integrals| ÷ I_M")
         pm = o["P_m"] / o["I_M"]
-        xs = np.array(nd)
-        ax.plot(xs, pm / np.sqrt(np.maximum(xs, 1e-9)), color=col, lw=0.8, ls=(0, (3, 2)))
+        xs = np.geomspace(1.0, max(nd), 50)          # the equal-cell yardstick only makes sense for N·Δ >= 1
+        ax.plot(xs, pm / np.sqrt(xs), color=col, lw=0.8, ls=(0, (3, 2)))
         ax.axhline(o["dial_floor"], color=col, lw=0.6)
     _undecided(ax)
     ax.set_xscale("log")
@@ -88,7 +89,8 @@ def fig_X0(res, out):
     ax.set_xlabel("window width N·Δ (Δ in units of 1/N)")
     ax.set_ylabel("W(Δ)")
     ax.set_title("(c) how much phase knowledge would suffice")
-    ax.plot([], [], color=MUTED, lw=0.8, ls=(0, (3, 2)), label="independent-cell yardstick (P_m/I_M)/√(NΔ)")
+    ax.plot([], [], color=INK2, lw=0.8, ls=(0, (3, 2)), label="equal-cell yardstick (P_m/I_M)/√(NΔ), pair colours")
+    ax.plot([], [], color=INK2, lw=0.6, label="thin line: W(∞), whole gaps between arcs")
     ax.legend(loc="lower left", fontsize=7)
     a, b = e0[(150, 20)], e0[(20, 10)]
     lo, hi = sorted([a["P_m"] / a["I_M"], b["P_m"] / b["I_M"]])
@@ -120,8 +122,8 @@ def fig_X1(res, out):
     ax = axes[1]
     x = np.arange(len(pairs))
     n = e1[pairs[0]]["n_targets"]
-    for key, col, mk, lab in (("bound_textbook", MUTED, "v", "sup$^2$·ΣΛ$^2$ (textbook)"),
-                              ("bound_natural_sup", ORANGE, "s", "sup$^2$·P_m (the ternary device)"),
+    for key, col, mk, lab in (("bound_textbook", MUTED, "v", "sup$^2$·ΣΛ$^2$ (textbook: the 1937–38 proofs)"),
+                              ("bound_natural_sup", ORANGE, "s", "sup$^2$·P_m (sup pulled out, minor-arc L$^2$)"),
                               ("bound_4th", BLUE, "o", "∫_m|S|$^4$ (true 4th moment)"),
                               ("bound_oracle", AQUA, "D", "Σ_targets I_m(N)$^2$ (oracle, no theorem)")):
         ax.plot(x, [max(e1[p][key], 0.5) for p in pairs], mk + "-", color=col, ms=5, mec=SURF, mew=1.0, lw=1.0, label=lab)
@@ -165,7 +167,8 @@ def fig_X5(res, out):
                label=f"{len(tr)} targets with P_m < I_M(N): certified R2(N) > 0 by magnitudes alone")
     for t in res["e5_trunc"]:
         from singular_series import SS2_product
-        ax.scatter([SS2_product(t["N"])], [t["ratio"]], s=40, facecolor=SURF, edgecolor=INK, linewidth=1.0, zorder=4)
+        ax.scatter([SS2_product(t["N"])], [t["ratio"]], s=70, marker="D", facecolor="none", edgecolor=INK, linewidth=1.0,
+                   zorder=4)
         below = t["ratio"] < 1
         ax.annotate(f"{t['N']:,}: S cut at N, Q = {t['Q']}", (SS2_product(t["N"]), t["ratio"]),
                     xytext=(-8, -16) if below else (10, -14), ha="right" if below else "left",
@@ -176,7 +179,7 @@ def fig_X5(res, out):
     ax.set_xlabel("SS2(N)")
     ax.set_ylabel("P_m / I_M(N)  at (Q, c) = (223, 10)")
     _plain_log(ax)
-    ax.plot([], [], "o", mfc=SURF, mec=INK, ls="none", label="open circles: S truncated at N, arcs (Qmax(N, 10), 10)")
+    ax.plot([], [], "D", mfc="none", mec=INK, ls="none", label="open diamonds: S truncated at N, arcs (Qmax(N, 10), 10)")
     ax.set_title("(a) the wall is the same for every target; the signal grows with SS2(N)")
     ax.legend(loc="upper right", fontsize=7.5)
     ax = axes[1]
@@ -190,14 +193,14 @@ def fig_X5(res, out):
             ax.annotate(f"{r['n_transmitted']}", (r["X"], r["need"]), xytext=(0, -13 if c == 10 else 7),
                         textcoords="offset points", fontsize=7, color=col, ha="center")
     xs = sorted({r["X"] for r in sc})
-    ax.plot(xs, [max(r["max_SS2"] for r in sc if r["X"] == x_) for x_ in xs], color=INK, lw=1.0,
-            label="largest SS2(N) among the targets")
+    ax.plot(xs, [max(r["max_SS2"] for r in sc if r["X"] == x_) for x_ in xs], "s", color=INK, ms=6, ls="none",
+            label="largest SS2(N) among the targets at each X")
     ax.set_xscale("log")
     ax.set_xlabel("X")
     ax.set_ylabel("singular series")
-    ax.set_title("(b) the SS2 a target needs rises at every X; the best available rises in rare steps\n(labels: number of targets transmitted)")
+    ax.set_title("(b) the SS2 a target needs rises at every X; the largest available rises slowly\n(labels: targets with P_m < I_M)")
     ax.legend(loc="upper left", fontsize=7.5)
-    fig.suptitle("Fig X5. Single-N transmission with no relaxation: a few very smooth N get through, and fewer as X grows",
+    fig.suptitle("Fig X5. Single-N transmission with no relaxation: a few very smooth N get through, a falling fraction as X grows",
                  x=0.01, ha="left", fontsize=10.5, fontweight="bold")
     fig.tight_layout()
     _save(fig, out, "fig_X5_transmission.png")
@@ -213,13 +216,13 @@ def fig_X2(res, out):
     K = np.arange(len(r["joint_ratio"]))
     ax.plot(K, r["joint_ratio"], "o-", color=BLUE, ms=6, mec=SURF, mew=1.0, lw=1.2, label="joint ∫_m|S|$^2$|G|$^K$ (sharpest magnitude bound)")
     ax.plot(K, r["rayleigh_ratio"], color=MUTED, lw=1.0, label="Rayleigh prediction (|S|, |G| independent)")
-    ax.plot(K, r["holder_ratio"], "s-", color=AQUA, ms=5, mec=SURF, mew=1.0, lw=1.0, label="Hölder")
+    ax.plot(K, r["holder_ratio"], "s-", color=YELLOW, ms=5, mec=SURF, mew=1.0, lw=1.0, label="Hölder")
     ax.plot(K, r["sup_ratio"], "v-", color=ORANGE, ms=5, mec=SURF, mew=1.0, lw=1.0, label="sup_m|G|$^K$·P_m")
     for C, ls in ((1, "-"), (2, (0, (4, 2))), (4, (0, (1, 2)))):
         vals = [v[0] for v in r["theorem"][C]["split"]]
         ax.plot(K[2:], vals[2:], color=VIOLET, lw=1.2, ls=ls, label=f"theorem-shaped (λ-split, sieve constant C = {C})")
     r2 = e2["rows"][(20, 10)]
-    ax.plot(K, r2["joint_ratio"], "o", color=BLUE, mfc=SURF, ms=5, mew=1.0, ls=(0, (3, 2)), lw=0.8, label="joint at (20, 10)")
+    ax.plot(K, r2["joint_ratio"], "o", color=AQUA, mfc=SURF, ms=5, mew=1.0, ls=(0, (3, 2)), lw=0.8, label="joint at (20, 10)")
     _undecided(ax)
     ax.set_yscale("log")
     ax.set_xlabel("K (number of powers of 2 added)")
@@ -230,7 +233,7 @@ def fig_X2(res, out):
     ax = axes[1]
     for pr, ls in (((150, 20), "-"), ((20, 10), (0, (3, 2)))):
         sh = e2["rows"][pr]["shoulder_share"]
-        for R, col in ((60, VIOLET), (200, ORANGE), (1000, AQUA)):
+        for R, col in ((60, VIOLET), (200, ORANGE), (1000, YELLOW)):
             ax.plot(K, 100 * sh[R], "o", color=col, ms=4.5, mec=SURF, mew=0.8, ls=ls, lw=1.1,
                     label=f"within {R}/N of 0 or 1/2, {pr}")
     ax.set_xlabel("K (number of powers of 2 added)")
@@ -283,15 +286,16 @@ def fig_X3(res, out):
     ax.set_xlabel("r  (second summand has at most r prime factors)")
     ax.set_ylabel("minor-arc bound ÷ major part")
     _plain_log(ax)
-    ax.set_title("(a) N = p + m, Ω(m) ≤ r: magnitudes close at r = 2–3; random sets of the same size never do")
+    ax.set_title("(a) N = p + m, Ω(m) ≤ r: joint closes at r = 2–3, Cauchy–Schwarz at 3–4; random sets never do")
     ax.legend(loc="upper right", fontsize=6.6, ncol=2)
     ax = axes[1]
     zs = sorted(int(n.split("-")[0]) for n in e3 if n.endswith("-rough"))
-    for pr, ls in (((150, 20), "-"), ((20, 10), (0, (3, 2)))):
-        ax.plot(zs, [e3[f"{z}-rough"]["rows"][pr]["joint_ratio"] for z in zs], "o", color=BLUE, ms=4, ls=ls, lw=1.0,
-                label=f"joint, {pr}")
-        ax.plot(zs, [e3[f"{z}-rough"]["rows"][pr]["CS_ratio"] for z in zs], "s", color=ORANGE, ms=4, ls=ls, lw=1.0,
-                label=f"Cauchy–Schwarz, {pr}")
+    for pr in ((150, 20), (20, 10)):
+        col = PAIR_COL[pr]
+        ax.plot(zs, [e3[f"{z}-rough"]["rows"][pr]["joint_ratio"] for z in zs], "o-", color=col, ms=4.5, mec=SURF, mew=0.8,
+                lw=1.1, label=f"joint, {pr}")
+        ax.plot(zs, [e3[f"{z}-rough"]["rows"][pr]["CS_ratio"] for z in zs], "o", color=col, mfc=SURF, ms=4.5, mew=0.9,
+                ls=(0, (3, 2)), lw=0.8, label=f"Cauchy–Schwarz, {pr}")
     _undecided(ax)
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -323,14 +327,18 @@ def fig_X4(res, out):
     ax = axes[0]
     pf = e4["profile"]
     ax.semilogy(pf["Nbeta"], pf["S"], color=BLUE, lw=1.0, label="sharp cutoff: |S(β)|/ψ")
-    ax.semilogy(pf["Nbeta"], pf["S_eta"], color=ORANGE, lw=1.0, label="smooth bump: |S_η(β)|/ψ_η")
+    ax.semilogy(pf["Nbeta"], pf["S_eta"], color=INK, lw=1.0, label="smooth bump: |S_η(β)|/ψ_η")
+    noise = math.sqrt(e4["sum_w2"]) / e4["psi_eta"]
+    ax.axhline(noise, color=INK2, lw=0.8, ls=(0, (1, 2)))
+    ax.text(30, noise * 1.3, "primes' noise level √Σw²/ψ_η", ha="right", fontsize=7, color=INK2,
+            bbox=dict(boxstyle="round,pad=0.15", fc=SURF, ec="none", alpha=0.9))
     for c in (5, 10, 20):
         ax.axvline(c, color=MUTED, lw=0.8)
         ax.text(c + 0.2, 1.4e-4, f"c = {c}", fontsize=7, color=INK2)
     ax.set_ylim(1e-4, 2)
     ax.set_xlabel("N·β next to α = 0")
     ax.set_ylabel("normalised |S| (log)")
-    ax.set_title("(a) the sharp window rings (sidelobes); the bump does not")
+    ax.set_title("(a) the sharp window rings; the bump's sidelobes are far lower")
     ax.legend(loc="upper right", fontsize=7.5)
     ax = axes[1]
     rows = e4["rows"]
@@ -351,7 +359,8 @@ def fig_X4(res, out):
     ax.set_xlabel("Q")
     ax.set_ylabel("ternary B3 / main")
     ax.set_title("(b) ternary: smoothing removes the c = 5 plateau")
-    ax.text(0.02, 0.02, "sharp c = 10 and c = 20 coincide for Q ≤ 50", transform=ax.transAxes, fontsize=7, color=INK2)
+    ax.text(0.02, 0.02, "sharp: all three c coincide for Q ≤ 20 (blue under green); c = 10 and 20 up to Q = 50",
+            transform=ax.transAxes, fontsize=7, color=INK2)
     ax.legend(loc="upper right", fontsize=6.8, ncol=2)
     ax = axes[2]
     for c, col in ((10, ORANGE), (20, AQUA)):
