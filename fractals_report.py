@@ -125,6 +125,19 @@ def model_join(res, pr, tol: float = 1.1, pmin: float = 1e-5):
     return None
 
 
+def model_ratio(res, pr, t_lo: float, t_hi: float, pmin: float = 1e-5) -> np.ndarray:
+    """Measured / spike-sum model P(> t) on the grid points with t in [t_lo, t_hi] and P >= pmin."""
+    ts, r = np.asarray(res["m3_t"]), res["m3"][pr]
+    P, mod = np.asarray(r["primes"]["ccdf"]), np.asarray(r["model"])
+    sel = (ts >= t_lo - 1e-9) & (ts <= t_hi + 1e-9) & (P >= pmin) & (mod > 0)
+    return P[sel] / mod[sel]
+
+
+def sur_group(res, prs) -> str:
+    v = [surrogate_ratio(res, p) for p in prs]
+    return f"{round(100 * (min(a for a, _ in v) - 1))}–{round(100 * (max(b for _, b in v) - 1))}%"
+
+
 def decades(res, pr) -> float:
     lo, hi = res["m3"][pr]["pareto_range"]
     return math.log10(hi / lo)
@@ -260,7 +273,8 @@ def headline(res) -> str:
 
 
 def certificates(res) -> str:
-    rows = [[n, "pass" if ok else "FAIL", d] for n, ok, d in res["certificates"]]
+    rows = [[n.replace("q <= 40:", "q <= 40, p/q <= 1/2 (the rest by conjugation):"), "pass" if ok else "FAIL", d]
+            for n, ok, d in res["certificates"]]
     return ("## 0. Certificates\n\nEvery identity the experiments rely on, checked at full scale (the run aborts if one "
             "fails).\n\n" + _table(["check", "result", "detail"], rows) + "\n")
 
@@ -372,7 +386,8 @@ of the whole graph.
 
 **Shows.** The major-arc spike picture holds as a data collapse for φ(q) ≲ 300 (binned medians: mean 1.08, sd 0.33 at
 φ ≈ 250–320) and then degrades steadily (mean 1.23, sd 0.51 at φ ≈ 400–520). Its mean, spread and phase locking are
-predicted throughout by the variance of primes in progressions, until spike and sea are equal at the computable q*(X).
+predicted from the exact second moments of S(a/q) for every q (Beckmann), and with no data at all from the variance of
+primes in progressions for prime q (Rice-FG), until spike and sea are equal at the computable q*(X).
 Phase locking (⟨cos θ⟩ → 1) and the height collapse fail together. **Does not show.** Any
 self-similarity under zoom; any link between q* and an admissible arc range; anything asymptotic (FG is a conjectural
 asymptotic, checked at these X only).
@@ -581,6 +596,7 @@ def sec_m3(res) -> str:
     cr55 = m3[(5, 5)]["cramer"]["sup2"] / m3[(5, 5)]["cramer"]["mean_m"]
     dec_lo, dec_hi = min(decades(res, p) for p in PAIRS7[:3]), max(decades(res, p) for p in PAIRS7[:3])
     sur50, sur150, sur223 = sur_text(res, (50, 10)), sur_text(res, (150, 20)), sur_text(res, (223, 10))
+    surq20 = sur_group(res, PAIRS7[:3])
     km_lo = f"{min(kmr[p] for p in PAIRS7[:3]):.3f}–{max(kmr[p] for p in PAIRS7[:3]):.3f}"
     km_hi = ", ".join(f"{kmr[p]:.2f} at {pair(p)}" for p in PAIRS7[3:])
     return f"""## M3. Mild versus wild on the minor arcs, by (Q,c) (fig_M3)
@@ -627,8 +643,9 @@ index of |S|² is {hl}, i.e. {hl2} in |S|: the arc truncation steepens the measu
 index ≤ 2), so the minor arcs at Q ≤ 20 are wild only **in the untruncated idealisation**; the measured, truncated
 tail is pre-wild in |S|. At finite N every moment is finite in any case; the tail is never "extreme" (state 7 needs every
 moment infinite). For Q ≳ 50 the arcs cut the tail off within a decade of the bulk. What remains is **neither wild nor
-exponential**: deterministic residual spikes on a sea, which the singular-series surrogate reproduces only roughly: its
-P(> t) over t ∈ [4, 32] is {sur50}, {sur150} and {sur223}. Cramér is exponential in |S|² in the bulk (borderline mild); beyond t ≈ 10 the
+exponential**: deterministic residual spikes on a sea. Over t ∈ [4, 32] the singular-series surrogate's P(> t) is
+{surq20} high at Q ≤ 20 and {sur50}, where spikes dominate, but {sur150} and {sur223}, where the sea matters: there it
+reproduces the shape only roughly. Cramér is exponential in |S|² in the bulk (borderline mild); beyond t ≈ 10 the
 arc-edge sidelobes of its single q = 1 spike add a power-law piece of ≈ 10⁻⁵ (max/mean {cr55:.0f} at (5,5)). The fourth-moment model, the Pareto tail and κ are the same fact. The
 ternary bound's sup is an order statistic of the truncated tail. **Does not show.** That any tail is wild at finite N;
 probability over primes (the randomness here is uniform α); anything beyond the surrogate.
@@ -1004,8 +1021,8 @@ def sec_literal(res) -> str:
         ["Noah effect", "LITERAL (statistics in α; α is not time)", f"H_½ = {hhalf:.2f} against {hhalf_c:.2f} for Cramér at (20,10)"],
         ["Joseph effect", "NOT DETECTED",
          f"H₂ = {h10:.3f} / {h100:.3f} at (150,20), above Cramér by z = {z10:.1f} / {z100:.1f} in Nℓ ∈ [10,100) / [100,1000), from "
-         "the residual-spike spectrum (the surrogate reproduces it); the large-lag rise at (150,20) sits in the phases "
-         "(Joseph-only walk), rests on ≤ 186 independent increments and is not reproduced consistently across R"],
+         "the residual-spike spectrum (the surrogate reproduces it); the large-lag rise at (150,20) rests on ≤ 186 "
+         "independent increments and is not reproduced consistently across R"],
         ["inner cutoff 1/N", "LITERAL but GENERIC", "band limit of any degree-N polynomial; \"smooth\", not \"ballistic\"; the primes' shape follows the triangular envelope"],
         ["spikes are self-similar", "NO: a data collapse",
          f"heights scaled by μ/φ, widths fixed; holds for φ ≲ 300 (main lobe; mean within 8%, sd ≤ 0.33), degrades until spike = sea at φ(q*) ≈ "
@@ -1073,7 +1090,8 @@ cell, it is the large-value count exponent 2(1 − σ), the finite-N shadow of J
 of q, it is equal energy per octave, which is why arcs up to Q capture only (ln Q + 1.33)/L_N of the energy
 (L_N = NΣΛ²/ψ² = {L_N:.2f}): the L² wall in fractal language. These are one fact, not independent confirmations. A
 surrogate built from the singular-series spikes q ≤ 1000 and a Gaussian sea of matched power reproduces the spectrum
-(D₂ within {d2acc:.3f}), the tail and κ at Q ≤ 20 (κ within {100 * max(abs(r - 1) for r in kr_s):.1f}%) and the walk
+(D₂ within {d2acc:.3f}), the tail and κ at Q ≤ 20 (P(> t) {sur_group(res, small)} high over t ∈ [4, 32], κ within
+{100 * max(abs(r - 1) for r in kr_s):.1f}%) and the walk
 exponents; where the sea matters it is coarser (P(> t) over t ∈ [4, 32] {sur_text(res, (150, 20))} and
 {sur_text(res, (223, 10))}; κ off by up to {100 * max(abs(r - 1) for r in kr_l):.0f}% at Q ≥ 100). The octave law (A1) and the
 large-value counts (A2) are compared with the spike models and the Farey count instead. Nothing beyond singular-series
@@ -1128,8 +1146,12 @@ def captions(res) -> str:
     q1 = qstar_at(res, res["X"])
     js = [model_join(res, p) for p in PAIRS7[:4]]
     join_s = f"{min(js):.0f}–{max(js):.0f}" if all(j is not None for j in js) else "—"
-    j150 = model_join(res, (150, 20))
-    join_150 = f"{j150:.0f}" if j150 else "—"
+    r100 = model_ratio(res, (100, 20), 16.0, 1e9)
+    n100 = f"{int(np.sum(r100 <= 1.1))} of {len(r100)}"
+    rbig = np.concatenate([model_ratio(res, p, 4.0, 32.0) for p in ((150, 20), (223, 10))])
+    rmid = np.concatenate([model_ratio(res, p, 16.0, 32.0) for p in ((150, 20), (223, 10))])
+    big_rng = (f"above it, by up to {round(100 * (rbig.max() - 1))}% at t ≈ 4 and by "
+               f"{round(100 * (rmid.min() - 1))}–{round(100 * (rmid.max() - 1))}% at t ∈ [16, 32]")
     dec_s = f"{min(decades(res, p) for p in PAIRS7[:3]):.1f}–{max(decades(res, p) for p in PAIRS7[:3]):.1f}"
     m2, m5 = res["m2"], res["m5"]
     med = m5["mediant"][21]
@@ -1160,11 +1182,11 @@ within the first few hundred ranks (f).
 
 **Fig M3.** Under uniform α on the minor arcs the tail of |S|² is the Farey count again, P(> t) ≈ ψ²/(2N|m|·t·mean), a
 power law of index 1 in |S|² (2 in |S|). The semi-analytic spike sum (no fit) follows the measured tail to within 10%
-from t ≈ {join_s} at Q ≤ 50, where spikes dominate, and explains the steepening as truncation by the arcs; at Q ≥ 100 the
-sea keeps the data more than 10% above it over most of the range (within 10% only from t ≈ {join_150} at (150,20)). At Q ≤ 20 the tail
+from t ≈ {join_s} at Q ≤ 50, where spikes dominate, and at (100,20) from t ≈ 16 apart from single points ({n100} grid
+points within 10%); it explains the steepening as truncation by the arcs. At Q ≥ 150 the sea keeps the data {big_rng}. At Q ≤ 20 the tail
 spans {dec_s} decades (wild only in the untruncated idealisation); for Q ≳ 50 the arcs cut it within a decade, leaving
-residual spikes on a sea that the surrogate reproduces only roughly (P(> t) over t ∈ [4, 32] {sur_text(res, (50, 10))},
-{sur_text(res, (150, 20))} and {sur_text(res, (223, 10))}). Cramér is exponential apart from the edge-sidelobe plateau of its
+residual spikes on a sea. The surrogate's P(> t) over t ∈ [4, 32] is {sur_group(res, PAIRS7[:4])} high at Q ≤ 50 but
+{sur_text(res, (150, 20))} and {sur_text(res, (223, 10))}. Cramér is exponential apart from the edge-sidelobe plateau of its
 q = 1 spike. The vertical line is the largest surviving value and the term that sets it (f:
 Hill index and kurtosis by (Q,c)).
 

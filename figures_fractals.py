@@ -252,7 +252,7 @@ def fig_M3(res, out):
         ax.set_ylabel("P(> t)")
         ax.set_title(f"({'abcde'[pairs.index(pr)]}) (Q, c) = {pr}" + ("  (shaded: Pareto range)" if hi >= 10 * lo else ""))
         if pr == (5, 5):
-            ax.legend(loc="lower left", bbox_to_anchor=(0.1, 0.0), fontsize=6.8, framealpha=1)
+            ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.0), fontsize=6.8)
     ax = axes[1, 2]
     tp = res.get("m3_pairs_order") or [(5, 5), (10, 10), (20, 10), (50, 10), (100, 20), (150, 20), (223, 10)]
     x = np.arange(len(tp))

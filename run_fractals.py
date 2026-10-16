@@ -408,7 +408,7 @@ def stage_mandelbrot(res, L, mu, phi):
             dh = fr.bulb_diam_half(p, q)
             rows.append({"p": p, "q": q, "theta": p / q, "s": s, "centre": c, "centre_root": abs(c - croot) / s,
                          "diam_half": dh / s, "diam_half_abs": dh, "ok": ok})
-    certify("Mandelbrot bulbs q <= 40: period, rotation number, root continuation", allok and len(rows) == 245,
+    certify("Mandelbrot bulbs q <= 40, p/q <= 1/2 (the rest by conjugation): period, rotation number, root continuation", allok and len(rows) == 245,
             f"{sum(r['ok'] for r in rows)}/{len(rows)} in {time.time() - t:.1f} s", res)
     d12 = fr.bulb_diam_half(1, 2)
     certify("bulb 1/2: diam/2 = 1/4", abs(d12 - 0.25) <= 1e-10, f"{d12:.12f}", res)

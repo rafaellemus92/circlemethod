@@ -75,7 +75,7 @@ Every identity the experiments rely on, checked at full scale (the run aborts if
 | kappa and sup^2 = escapes at (100, 20) | pass | kappa 4.9267 |
 | kappa and sup^2 = escapes at (150, 20) | pass | kappa 3.3116 |
 | kappa and sup^2 = escapes at (223, 10) | pass | kappa 2.6424 |
-| Mandelbrot bulbs q <= 40: period, rotation number, root continuation | pass | 245/245 in 1.2 s |
+| Mandelbrot bulbs q <= 40, p/q <= 1/2 (the rest by conjugation): period, rotation number, root continuation | pass | 245/245 in 1.2 s |
 | bulb 1/2: diam/2 = 1/4 | pass | 0.250000000000 |
 
 ## M1. Spike data collapse and its cutoffs (fig_M1)
@@ -174,7 +174,8 @@ of the whole graph.
 
 **Shows.** The major-arc spike picture holds as a data collapse for φ(q) ≲ 300 (binned medians: mean 1.08, sd 0.33 at
 φ ≈ 250–320) and then degrades steadily (mean 1.23, sd 0.51 at φ ≈ 400–520). Its mean, spread and phase locking are
-predicted throughout by the variance of primes in progressions, until spike and sea are equal at the computable q*(X).
+predicted from the exact second moments of S(a/q) for every q (Beckmann), and with no data at all from the variance of
+primes in progressions for prime q (Rice-FG), until spike and sea are equal at the computable q*(X).
 Phase locking (⟨cos θ⟩ → 1) and the height collapse fail together. **Does not show.** Any
 self-similarity under zoom; any link between q* and an admissible arc range; anything asymptotic (FG is a conjectural
 asymptotic, checked at these X only).
@@ -404,8 +405,9 @@ index of |S|² is 1.04–1.47, i.e. 2.1–2.9 in |S|: the arc truncation steepen
 index ≤ 2), so the minor arcs at Q ≤ 20 are wild only **in the untruncated idealisation**; the measured, truncated
 tail is pre-wild in |S|. At finite N every moment is finite in any case; the tail is never "extreme" (state 7 needs every
 moment infinite). For Q ≳ 50 the arcs cut the tail off within a decade of the bulk. What remains is **neither wild nor
-exponential**: deterministic residual spikes on a sea, which the singular-series surrogate reproduces only roughly: its
-P(> t) over t ∈ [4, 32] is 4–14% high at (50,10), 13–21% high at (150,20) and 17–56% high at (223,10). Cramér is exponential in |S|² in the bulk (borderline mild); beyond t ≈ 10 the
+exponential**: deterministic residual spikes on a sea. Over t ∈ [4, 32] the singular-series surrogate's P(> t) is
+2–13% high at Q ≤ 20 and 4–14% high at (50,10), where spikes dominate, but 13–21% high at (150,20) and 17–56% high at (223,10), where the sea matters: there it
+reproduces the shape only roughly. Cramér is exponential in |S|² in the bulk (borderline mild); beyond t ≈ 10 the
 arc-edge sidelobes of its single q = 1 spike add a power-law piece of ≈ 10⁻⁵ (max/mean 307 at (5,5)). The fourth-moment model, the Pareto tail and κ are the same fact. The
 ternary bound's sup is an order statistic of the truncated tail. **Does not show.** That any tail is wild at finite N;
 probability over primes (the randomness here is uniform α); anything beyond the surrogate.
@@ -702,7 +704,7 @@ The physics vocabulary raised along the way, sorted by whether it applies litera
 | Cramér is mild | LITERAL in the bulk | \|S\|² exponential (borderline mild), Re S and Im S Gaussian (proper mild), apart from the power-law piece (≈ 10⁻⁵) of the arc-edge sidelobes of its q = 1 spike |
 | minor arcs at (150,20) are mild | FALSE: not wild, and not exponential either | Hill ≥ 2, max 72× mean; but κ = 3.31 against 2.00 for Cramér, and P(> 8) is 17× e^(−8) |
 | Noah effect | LITERAL (statistics in α; α is not time) | H_½ = 0.78 against 0.52 for Cramér at (20,10) |
-| Joseph effect | NOT DETECTED | H₂ = 0.531 / 0.524 at (150,20), above Cramér by z = 8.2 / 2.2 in Nℓ ∈ [10,100) / [100,1000), from the residual-spike spectrum (the surrogate reproduces it); the large-lag rise at (150,20) sits in the phases (Joseph-only walk), rests on ≤ 186 independent increments and is not reproduced consistently across R |
+| Joseph effect | NOT DETECTED | H₂ = 0.531 / 0.524 at (150,20), above Cramér by z = 8.2 / 2.2 in Nℓ ∈ [10,100) / [100,1000), from the residual-spike spectrum (the surrogate reproduces it); the large-lag rise at (150,20) rests on ≤ 186 independent increments and is not reproduced consistently across R |
 | inner cutoff 1/N | LITERAL but GENERIC | band limit of any degree-N polynomial; "smooth", not "ballistic"; the primes' shape follows the triangular envelope |
 | spikes are self-similar | NO: a data collapse | heights scaled by μ/φ, widths fixed; holds for φ ≲ 300 (main lobe; mean within 8%, sd ≤ 0.33), degrades until spike = sea at φ(q*) ≈ 512; the median window maximum scales like L^(1/2) (one statistic, the Farey count per window) |
 | multifractal for α < 1 | LITERAL only as a coarse-grained spectrum, ε tied to N | straight line f = α, offset −ln(2L)/ln(1/ε), L = 10.82; Diophantine, not a cascade |
@@ -729,7 +731,8 @@ cell, it is the large-value count exponent 2(1 − σ), the finite-N shadow of J
 of q, it is equal energy per octave, which is why arcs up to Q capture only (ln Q + 1.33)/L_N of the energy
 (L_N = NΣΛ²/ψ² = 12.81): the L² wall in fractal language. These are one fact, not independent confirmations. A
 surrogate built from the singular-series spikes q ≤ 1000 and a Gaussian sea of matched power reproduces the spectrum
-(D₂ within 0.003), the tail and κ at Q ≤ 20 (κ within 1.3%) and the walk
+(D₂ within 0.003), the tail and κ at Q ≤ 20 (P(> t) 2–13% high over t ∈ [4, 32], κ within
+1.3%) and the walk
 exponents; where the sea matters it is coarser (P(> t) over t ∈ [4, 32] 13–21% high at (150,20) and
 17–56% high at (223,10); κ off by up to 9% at Q ≥ 100). The octave law (A1) and the
 large-value counts (A2) are compared with the spike models and the Farey count instead. Nothing beyond singular-series
@@ -800,11 +803,11 @@ within the first few hundred ranks (f).
 
 **Fig M3.** Under uniform α on the minor arcs the tail of |S|² is the Farey count again, P(> t) ≈ ψ²/(2N|m|·t·mean), a
 power law of index 1 in |S|² (2 in |S|). The semi-analytic spike sum (no fit) follows the measured tail to within 10%
-from t ≈ 7–10 at Q ≤ 50, where spikes dominate, and explains the steepening as truncation by the arcs; at Q ≥ 100 the
-sea keeps the data more than 10% above it over most of the range (within 10% only from t ≈ 54 at (150,20)). At Q ≤ 20 the tail
+from t ≈ 7–10 at Q ≤ 50, where spikes dominate, and at (100,20) from t ≈ 16 apart from single points (10 of 12 grid
+points within 10%); it explains the steepening as truncation by the arcs. At Q ≥ 150 the sea keeps the data above it, by up to 145% at t ≈ 4 and by 2–34% at t ∈ [16, 32]. At Q ≤ 20 the tail
 spans 1.2–2.3 decades (wild only in the untruncated idealisation); for Q ≳ 50 the arcs cut it within a decade, leaving
-residual spikes on a sea that the surrogate reproduces only roughly (P(> t) over t ∈ [4, 32] 4–14% high at (50,10),
-13–21% high at (150,20) and 17–56% high at (223,10)). Cramér is exponential apart from the edge-sidelobe plateau of its
+residual spikes on a sea. The surrogate's P(> t) over t ∈ [4, 32] is 2–14% high at Q ≤ 50 but
+13–21% high at (150,20) and 17–56% high at (223,10). Cramér is exponential apart from the edge-sidelobe plateau of its
 q = 1 spike. The vertical line is the largest surviving value and the term that sets it (f:
 Hill index and kurtosis by (Q,c)).
 
