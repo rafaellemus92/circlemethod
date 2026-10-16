@@ -54,6 +54,10 @@ the tall near-rational spikes (Q large) and push the arc-edge sidelobes down (c 
 | `run_all.py` | runs modules 0–9, writes `figures/*.png` and `results.md` |
 | `tests/` | pytest: π(10^6); G(10^6); Parseval on the grid; grid integral = R2; FFT sign; R3 grid = convolution; c_q vs divisor formula and multiplicativity; SS2 sum vs product to 1e-4; SS3 likewise; disjointness assertion; major + minor = whole |
 | `results.md` | headline table, per-module tables, a caption per figure, deviations from the brief, and "What this does and does not show" |
+| `escapes.py`, `run_escapes.py` | the escape-route experiments E0–E5 (below); `run_escapes.py` writes `cache/escapes.pkl`, `figures/fig_X*.png`, `escapes.md` |
+| `figures_escapes.py`, `escapes_report.py` | figures X0–X5 and the `escapes.md` writer (every number in it is read from the pickle) |
+| `tests/test_escapes.py` | pytest on a small grid (X = 10^4): Bessel identity in N, 4th moment = additive energy, transmission certificate, G and R_K grid = direct, theorem-shaped bound ≥ joint bound, almost-prime and smooth counts, the z ≤ 7 closed form, η constants, window bound monotone |
+| `escapes.md` | the escape-route results: certificates, one section per experiment, captions, "What this does and does not show", references |
 
 ## Running
 
@@ -61,9 +65,11 @@ Needs Python 3.11 or newer (tested on 3.11 and 3.13), about 1.5 GB of free RAM a
 
 ```bash
 pip install numpy scipy matplotlib pytest
-python -m pytest -q tests          # ~10 s
+python -m pytest -q tests          # ~15 s
 python run_all.py                  # ~5 min on 4 cores, peak RSS ~1.4 GB; writes figures/ and results.md
 python run_all.py --figures        # redraw figures and results.md from cache/ctx.pkl
+python run_escapes.py              # escape routes E0–E5: ~4 min, peak RSS ~1.4 GB; needs run_all.py's cache
+python run_escapes.py --report     # redraw figures/fig_X*.png and escapes.md from cache/escapes.pkl
 ```
 
 `cache/` holds S on each grid (`S_<set>_N<N>_M<M>.npz`, 134 MB for M = 2^23) and the pickled results.
@@ -96,3 +102,29 @@ python run_all.py --figures        # redraw figures and results.md from cache/ct
 
 `results.md` → the headline table and §5 (the minor arcs), then `figures/fig_E_minor_stretch.png`
 (mass vs integrand vs running integral) and `figures/fig_T_binary_vs_ternary.png`.
+
+## Escape routes: what gets through the wall, and what that does not mean (`escapes.md`)
+
+The main run shows the obstacle: at N = 10^6 the minor arcs carry 2.6–5.8 times more energy than the whole count, so
+any bound that sees only |S| there fails (as it does for a typical N; E5 below finds the rare exceptions). Getting past that for every large N means proving that the minor-arc phases
+cancel, which is the open problem; nothing here attempts it. `escapes.md` instead measures the obstacle for one N and
+tests, at the same X = 10^6, the classical relaxations under which the *magnitude* inequality does close:
+
+* **E0, the obstacle.** The 6.1 M minor-arc phasors at (150,20) form a walk 2.9× the signal long that ends 1% of the way
+  out; every magnitude-only refinement is longer still. Phase-summed windows ≈ 21/N wide would suffice at this N (W < 0.99).
+* **E1, average over N.** One energy budget Σ_N I_m(N)² = ∫_m|S|⁴ is shared by all targets, so at most 274 of the
+  250,001 even N in [X/2, X] can fail at (150,20) (15,058 with the textbook sup form sup²·ΣΛ² of the 1937–38 proofs);
+  none does.
+* **E5, single-N transmission.** With no relaxation, 21 smooth N close to X (SS2 ≈ 5) have P_m < I_M(N) at (223,10),
+  16 of them below the 0.99 margin; the share of targets with P_m < I_M(N) falls at every tabulated X, from 2.8% at
+  X = 10^4 to 0.0014% at 2·10^6.
+* **E2, Linnik (add powers of 2).** One power of 2 already closes the joint magnitude bound at Q ≥ 20 — generic
+  averaging, as a random-shift control shows; the substitutes proofs can use push K to 4–7 at (150,20).
+* **E3, almost-primes.** Replacing one prime by m with Ω(m) ≤ 2 closes at (150,20), Ω ≤ 3–4 elsewhere; random sets of
+  the same density never close. Chen's and Rényi's theorems are sieve theorems; r = 2 here is not Chen's 2.
+* **E4, smooth weight (control).** Suppresses the arc-edge sidelobes (to 0.9% of the peak just past the c = 5 edge,
+  against 5.7% for the sharp cutoff), which removes the 1.007 plateau of the ternary bound, and leaves the binary wall
+  where it was.
+
+Every K\*, r\* and z\* there is a finite-X statistic, with a decision margin (closes < 0.99 < undecided < 1.01 < fails),
+not a constant comparable to a theorem's.
