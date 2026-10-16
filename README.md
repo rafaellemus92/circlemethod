@@ -74,7 +74,7 @@ python run_all.py                  # ~5 min on 4 cores, peak RSS ~1.4 GB; writes
 python run_all.py --figures        # redraw figures and results.md from cache/ctx.pkl
 python run_escapes.py              # escape routes E0–E5: ~4 min, peak RSS ~1.4 GB; needs run_all.py's cache
 python run_escapes.py --report     # redraw figures/fig_X*.png and escapes.md from cache/escapes.pkl
-python run_fractals.py             # fractal lens M1–M5, A1–A3: ~10 min, peak RSS ~1.6 GB; needs run_all.py's and run_escapes.py's caches
+python run_fractals.py             # fractal lens M1–M5, A1–A3: ~12 min, peak RSS ~1.6 GB; needs run_all.py's and run_escapes.py's caches
 python run_fractals.py --report    # redraw figures/fig_M*.png and fractals.md from cache/fractals.pkl
 ```
 

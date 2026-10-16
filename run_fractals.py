@@ -1,6 +1,6 @@
 """The fractal lens (M1-M5, A1-A3): Mandelbrot's measurement programme on the circle-method objects at X = 10^6.
 
-    python run_fractals.py            # full run (~10 min on 4 cores, peak RSS ~1.6 GB); needs run_all.py's and run_escapes.py's caches
+    python run_fractals.py            # full run (~12 min on 4 cores, peak RSS ~1.6 GB); needs run_all.py's and run_escapes.py's caches
     python run_fractals.py --report   # redraw figures/fig_M*.png and fractals.md from cache/fractals.pkl
 """
 from __future__ import annotations

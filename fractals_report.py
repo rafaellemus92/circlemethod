@@ -220,7 +220,7 @@ def headline(res) -> str:
          f"{a2['sieve_bound'][i70] / a2['cells'][i70]:.0f}",
          "count exponent 2(1 − σ) at resolution 1/N: the finite-N shadow of Jarník–Besicovitch"],
         ["A3 uncertainty", "why do sharp arcs leak?",
-         f"sharp cutoff: σ_n·σ_α grows like √L; smooth bump {bump['product']:.4f} = "
+         f"sharp cutoff: σ_x·σ_ξ grows like √L; smooth bump {bump['product']:.4f} = "
          f"{bump['product'] / bump['bound']:.2f}× the bound 1/(4π)",
          "the Heisenberg–Gabor inequality for conjugate n and α (ħ → 1/2π): literal"],
     ]
@@ -336,7 +336,7 @@ max|S|/ψ:
 {t_w}
 
 Local slope (primes) {rng(sl[win])} for N·L ∈ [120, 16000] and {rng(sl[low])} below N·L ≈ 60 (sea). The slope ½ is the
-Farey count read per window: a window of length ℓ holds its tallest spike at φ ~ (2/ℓ)^(1/2), of height ∝ ℓ^(1/2). It is a
+Farey count read per window: a window of width L (as a fraction of the circle) holds about L·y²/2 fractions with φ ≤ y, so its tallest spike has φ ~ (2/L)^(1/2) and height ∝ L^(1/2). It is a
 statistical self-affine scaling of one statistic between the sea floor and the q ≤ 5 spikes, not a test of self-affinity
 of the whole graph.
 
@@ -357,6 +357,9 @@ def sec_m2(res) -> str:
     rrows = [[i, fmt(comp_at(rm["primes"], i)), f"{stair_value(st, L, i):.2f}", fmt(comp_at(rm["hybrid"], i)),
               fmt(comp_at(rm["cramer"], i), ".2g")] for i in ranks]
     t_r = _table(["rank i", "primes", "Farey staircase (no fit)", "surrogate H₁₀₀₀", "Cramér"], rrows)
+    rk, cp = np.asarray(rm["primes"]["ranks"]), np.asarray(rm["primes"]["comp"])
+    s81 = (rk >= 8) & (rk <= 1024)
+    saw81, med81 = rng(cp[s81]), float(np.median(cp[s81]))
     crows = []
     for j in (5, 7, 9):
         d = m2["cumulative"][j]
@@ -417,7 +420,8 @@ def sec_m2(res) -> str:
                       f"{np.median(d['comp'][sel]):.2f}", rng(p2), f"{v512:.2f}" if v512 is not None else "—"])
     t_x = _table(["X", "L(X)", "L − ln X", "Nε", "median of 2L·i·m₍ᵢ₎, i ∈ [8, 256]", "at i = 8, 16, …, 256", "at i = 512"], xrows)
     x5 = [d for d in xs if d["X"] >= 10**5]
-    t_x += (f"\n\nL(X) − ln X = {rng([d['L'] - math.log(d['X']) for d in xs], 3)} at every X. The flat branch holds from "
+    lx = [d["L"] - math.log(d["X"]) for d in xs]
+    t_x += (f"\n\nL(X) − ln X lies between {min(lx):.3f} and {max(lx):.3f} at every X. The flat branch holds from "
             f"X ≈ 10^5 (medians {rng([float(np.median(d['comp'][(d['ranks'] >= 8) & (d['ranks'] <= 256)])) for d in x5])}); at "
             "X ≤ 3·10^4 the sea takes over within the first few hundred ranks.")
     return f"""## M2. Intermittency of the spectral measure: the Farey spectrum (fig_M2)
@@ -440,9 +444,8 @@ spike by a box and ρ = {res['sea_level']:.3f} the sea level from the surrogate)
 {t_r}
 
 The value at i = 4 is the φ = 2 degeneracy (q = 3 and 6 share φ = 2). Between consecutive φ-groups the curve is a
-sawtooth, {rng(np.asarray(rm['primes']['comp'])[(np.asarray(rm['primes']['ranks']) >= 8) & (np.asarray(rm['primes']['ranks']) <= 1024)])} over ranks
-8–1024 (median {np.median(np.asarray(rm['primes']['comp'])[(np.asarray(rm['primes']['ranks']) >= 8) & (np.asarray(rm['primes']['ranks']) <= 1024)]):.2f}), and the
-staircase reproduces it; the table shows powers of 2 only. Cramér has no flat branch.
+sawtooth, {saw81} over ranks 8–1024 (median {med81:.2f}), and the staircase reproduces it; the table shows powers of 2
+only. Cramér has no flat branch.
 
 **(b) Cumulative spectrum.** Compensated N_<·2L·ε^α (1 = the no-fit line; in parentheses below α_lo, where fewer than
 60 boxes count), with the no-fit offset and the measured mean of f_< − α over [α_lo, 0.9]:
@@ -632,6 +635,7 @@ def sec_m4(res) -> str:
         npass = sum(bool(np.all(np.abs(h - 0.5) <= 0.02)) for h in seeds)
         noah.append(f"{lo_:.3f}–{hi_:.3f} at {pair(pr)}")
         noah_ok.append(f"{npass}/{len(seeds)} seeds at {pair(pr)}")
+        noah_dev = max(float(np.max(np.abs(h - 0.5))) for h in seeds)
     jb = {pr: (hband(res, "primes", pr, "joseph", 2.0), hband(res, "cramer", pr, "joseph", 2.0),
                hband(res, "primes", pr, "joseph", 2.0, 3000, 50000), hband(res, "primes", pr, "noah", 2.0, 3000, 50000),
                hband(res, "primes", pr, "full", 2.0, 3000, 50000)) for pr in WALK}
@@ -683,8 +687,8 @@ and the deviations are larger.
 {t_p}
 
 Over 16 random-phase seeds the Noah-only H₂ spans {"; ".join(noah)} wherever n/ℓ ≥ 1500. The check 0.50 ± 0.02 holds
-for {" and ".join(noah_ok)}: at (20,10) a handful of the largest steps dominate the phase-randomised walk, so one seed
-can move it by a few hundredths. H_½ well above ½ for the primes and for the phase-randomised walk, but not for Cramér,
+for {" and ".join(noah_ok)}: at (20,10) a handful of the largest steps dominate the phase-randomised walk, so the seed
+moves it by up to {noah_dev:.2f}, and the check is only as good as that. H_½ well above ½ for the primes and for the phase-randomised walk, but not for Cramér,
 is the Noah effect (heavy tails), at (20,10) above all.
 
 The Joseph-only walk has H_½ ≈ H₁ ≈ {hband(res, "primes", (20, 10), "joseph", 0.5):.2f} (no heavy tails) but keeps the small H₂ excess: {jb[(150, 20)][0]:.3f} against
@@ -897,7 +901,7 @@ def sec_physics(res) -> str:
         ["leakage when the integral is restricted to arcs", "LITERAL", leak],
         ["energy conservation", "LITERAL", "Parseval (1/M)Σ|S|² = ΣΛ² (certificate)"],
         ["uncertainty principle, ħ → 1/(2π)", "LITERAL",
-         f"A3: sharp edges have unbounded σ_n·σ_α; the smooth bump sits at {bump['product'] / bump['bound']:.2f}× the bound"],
+         f"A3: sharp edges have unbounded σ_x·σ_ξ; the smooth bump sits at {bump['product'] / bump['bound']:.2f}× the bound"],
         ["the circle as a Brillouin zone; |S|² as the primes' diffraction pattern", "LITERAL (re-reading)",
          "n ∈ ℤ ⇒ α ∈ ℝ/ℤ; Bragg-like peaks at a/q with intensity (μ(q)ψ/φ(q))², only for squarefree q "
          "(cf. Torquato, Zhang & de Courcy-Ireland 2018, cited for the idea, not checked here)"],
