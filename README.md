@@ -57,6 +57,8 @@ the tall near-rational spikes (Q large) and push the arc-edge sidelobes down (c 
 
 ## Running
 
+Needs Python 3.11 or newer (tested on 3.11 and 3.13), about 1.5 GB of free RAM and ~1 GB of disk for `cache/`.
+
 ```bash
 pip install numpy scipy matplotlib pytest
 python -m pytest -q tests          # ~10 s

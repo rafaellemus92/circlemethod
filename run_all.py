@@ -834,6 +834,7 @@ def figure_captions(ctx: dict, v: dict) -> list[tuple[str, str]]:
     sea_rms = math.sqrt(v["win_mean"])
     sea_rayleigh = math.sqrt(math.log(2) * v["win_mean"])
     crests = [f["height"] / sea_rms for f in fr if f["height"] > 0] or [0.0]
+    fr_names = ", ".join(f"{f_['a']}/{f_['q']}" for f_ in fr)
     locked = [f for f in fr if f.get("mu") and "S_exact" in f]
     lock_ok = sum(np.sign(f["S_exact"].real) == np.sign(f["mu"]) for f in locked)
     pk = W.get("peaks", [])
@@ -917,7 +918,7 @@ def figure_captions(ctx: dict, v: dict) -> list[tuple[str, str]]:
          "S² against the reference e(Nα)) turns once per ~1/N, so neighbouring cells enter with effectively random "
          f"signs. (c) Mass piles up linearly to {W['cum_mass'][-1]:,.0f} over the window while the signed integral "
          f"wanders and ends at {W['cum'][-1]:+,.0f}: a random walk of ~300 steps. The fractions with q ≤ 300 inside "
-         f"the window ({', '.join(f'{f_['a']}/{f_['q']}' for f_ in fr)}) have model crests only "
+         f"the window ({fr_names}) have model crests only "
          f"{(f'{min(crests):.1f}' if max(crests) - min(crests) < 0.05 else f'{min(crests):.1f}–{max(crests):.1f}')}× the sea's rms √⟨|S|²⟩ = {sea_rms:,.0f}, and {pk_txt}; still, the exact "
          f"S(a/q) point along μ(q) in {lock_ok} of {len(locked)} cases — weakly locked crests that the major arcs "
          "leave on the minor arcs."),
